@@ -1,134 +1,134 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T15:54:12.611299+00:00",
+  "generatedAt": "2026-10-06T16:40:45.458130+00:00",
   "title": "Design System: Voxen",
   "extensions": {
     "colorMeta": {
       "bg": {
         "role": "neutral",
-        "displayName": "Carvão profundo",
-        "canonical": "#080a0d",
+        "displayName": "Azul noturno",
+        "canonical": "#0b1221",
         "tonalRamp": [
-          "oklch(15.00% 0.00747 256.88)",
-          "oklch(26.43% 0.00747 256.88)",
-          "oklch(37.86% 0.00747 256.88)",
-          "oklch(49.29% 0.00747 256.88)",
-          "oklch(60.71% 0.00747 256.88)",
-          "oklch(72.14% 0.00747 256.88)",
-          "oklch(83.57% 0.00747 256.88)",
-          "oklch(95.00% 0.00747 256.88)"
+          "oklch(15.00% 0.03278 264.39)",
+          "oklch(26.43% 0.03278 264.39)",
+          "oklch(37.86% 0.03278 264.39)",
+          "oklch(49.29% 0.03278 264.39)",
+          "oklch(60.71% 0.03278 264.39)",
+          "oklch(72.14% 0.03278 264.39)",
+          "oklch(83.57% 0.03278 264.39)",
+          "oklch(95.00% 0.03278 264.39)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "surface": {
         "role": "neutral",
-        "displayName": "Superfície carvão",
-        "canonical": "#101419",
+        "displayName": "Vidro azul",
+        "canonical": "rgb(22 34 53 / .75)",
         "tonalRamp": [
-          "oklch(15.00% 0.01198 254.12)",
-          "oklch(26.43% 0.01198 254.12)",
-          "oklch(37.86% 0.01198 254.12)",
-          "oklch(49.29% 0.01198 254.12)",
-          "oklch(60.71% 0.01198 254.12)",
-          "oklch(72.14% 0.01198 254.12)",
-          "oklch(83.57% 0.01198 254.12)",
-          "oklch(95.00% 0.01198 254.12)"
+          "oklch(15.00% 0.04008 259.32)",
+          "oklch(26.43% 0.04008 259.32)",
+          "oklch(37.86% 0.04008 259.32)",
+          "oklch(49.29% 0.04008 259.32)",
+          "oklch(60.71% 0.04008 259.32)",
+          "oklch(72.14% 0.04008 259.32)",
+          "oklch(83.57% 0.04008 259.32)",
+          "oklch(95.00% 0.04008 259.32)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "raised": {
         "role": "neutral",
-        "displayName": "Carvão elevado",
-        "canonical": "#171c22",
+        "displayName": "Ardósia elevada",
+        "canonical": "rgb(39 55 77 / .72)",
         "tonalRamp": [
-          "oklch(15.00% 0.01394 253.12)",
-          "oklch(26.43% 0.01394 253.12)",
-          "oklch(37.86% 0.01394 253.12)",
-          "oklch(49.29% 0.01394 253.12)",
-          "oklch(60.71% 0.01394 253.12)",
-          "oklch(72.14% 0.01394 253.12)",
-          "oklch(83.57% 0.01394 253.12)",
-          "oklch(95.00% 0.01394 253.12)"
+          "oklch(15.00% 0.04451 256.50)",
+          "oklch(26.43% 0.04451 256.50)",
+          "oklch(37.86% 0.04451 256.50)",
+          "oklch(49.29% 0.04451 256.50)",
+          "oklch(60.71% 0.04451 256.50)",
+          "oklch(72.14% 0.04451 256.50)",
+          "oklch(83.57% 0.04451 256.50)",
+          "oklch(95.00% 0.04451 256.50)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "hover": {
         "role": "neutral",
-        "displayName": "hover",
-        "canonical": "#1f252e",
+        "displayName": "Ardósia de interação",
+        "canonical": "rgb(62 82 107 / .65)",
         "tonalRamp": [
-          "oklch(15.00% 0.01903 258.36)",
-          "oklch(26.43% 0.01903 258.36)",
-          "oklch(37.86% 0.01903 258.36)",
-          "oklch(49.29% 0.01903 258.36)",
-          "oklch(60.71% 0.01903 258.36)",
-          "oklch(72.14% 0.01903 258.36)",
-          "oklch(83.57% 0.01903 258.36)",
-          "oklch(95.00% 0.01903 258.36)"
+          "oklch(15.00% 0.04854 254.33)",
+          "oklch(26.43% 0.04854 254.33)",
+          "oklch(37.86% 0.04854 254.33)",
+          "oklch(49.29% 0.04854 254.33)",
+          "oklch(60.71% 0.04854 254.33)",
+          "oklch(72.14% 0.04854 254.33)",
+          "oklch(83.57% 0.04854 254.33)",
+          "oklch(95.00% 0.04854 254.33)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "ink": {
         "role": "neutral",
-        "displayName": "ink",
-        "canonical": "#f5f7f8",
+        "displayName": "Branco frio",
+        "canonical": "#f3f7ff",
         "tonalRamp": [
-          "oklch(15.00% 0.00252 228.78)",
-          "oklch(26.43% 0.00252 228.78)",
-          "oklch(37.86% 0.00252 228.78)",
-          "oklch(49.29% 0.00252 228.78)",
-          "oklch(60.71% 0.00252 228.78)",
-          "oklch(72.14% 0.00252 228.78)",
-          "oklch(83.57% 0.00252 228.78)",
-          "oklch(95.00% 0.00252 228.78)"
+          "oklch(15.00% 0.01150 264.51)",
+          "oklch(26.43% 0.01150 264.51)",
+          "oklch(37.86% 0.01150 264.51)",
+          "oklch(49.29% 0.01150 264.51)",
+          "oklch(60.71% 0.01150 264.51)",
+          "oklch(72.14% 0.01150 264.51)",
+          "oklch(83.57% 0.01150 264.51)",
+          "oklch(95.00% 0.01150 264.51)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "muted": {
         "role": "neutral",
-        "displayName": "muted",
-        "canonical": "#9aa4ae",
+        "displayName": "Metadados azulados",
+        "canonical": "#bbc9de",
         "tonalRamp": [
-          "oklch(15.00% 0.01848 248.09)",
-          "oklch(26.43% 0.01848 248.09)",
-          "oklch(37.86% 0.01848 248.09)",
-          "oklch(49.29% 0.01848 248.09)",
-          "oklch(60.71% 0.01848 248.09)",
-          "oklch(72.14% 0.01848 248.09)",
-          "oklch(83.57% 0.01848 248.09)",
-          "oklch(95.00% 0.01848 248.09)"
+          "oklch(15.00% 0.03321 258.37)",
+          "oklch(26.43% 0.03321 258.37)",
+          "oklch(37.86% 0.03321 258.37)",
+          "oklch(49.29% 0.03321 258.37)",
+          "oklch(60.71% 0.03321 258.37)",
+          "oklch(72.14% 0.03321 258.37)",
+          "oklch(83.57% 0.03321 258.37)",
+          "oklch(95.00% 0.03321 258.37)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "primary": {
         "role": "primary",
-        "displayName": "Menta",
-        "canonical": "#66f2b1",
+        "displayName": "Gelo",
+        "canonical": "#b9deff",
         "tonalRamp": [
-          "oklch(15.00% 0.15346 160.40)",
-          "oklch(26.43% 0.15346 160.40)",
-          "oklch(37.86% 0.15346 160.40)",
-          "oklch(49.29% 0.15346 160.40)",
-          "oklch(60.71% 0.15346 160.40)",
-          "oklch(72.14% 0.15346 160.40)",
-          "oklch(83.57% 0.15346 160.40)",
-          "oklch(95.00% 0.15346 160.40)"
+          "oklch(15.00% 0.06012 245.47)",
+          "oklch(26.43% 0.06012 245.47)",
+          "oklch(37.86% 0.06012 245.47)",
+          "oklch(49.29% 0.06012 245.47)",
+          "oklch(60.71% 0.06012 245.47)",
+          "oklch(72.14% 0.06012 245.47)",
+          "oklch(83.57% 0.06012 245.47)",
+          "oklch(95.00% 0.06012 245.47)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
       "line": {
         "role": "neutral",
-        "displayName": "line",
-        "canonical": "#252b33",
+        "displayName": "Borda de vidro",
+        "canonical": "rgb(187 213 245 / .15)",
         "tonalRamp": [
-          "oklch(15.00% 0.01699 255.66)",
-          "oklch(26.43% 0.01699 255.66)",
-          "oklch(37.86% 0.01699 255.66)",
-          "oklch(49.29% 0.01699 255.66)",
-          "oklch(60.71% 0.01699 255.66)",
-          "oklch(72.14% 0.01699 255.66)",
-          "oklch(83.57% 0.01699 255.66)",
-          "oklch(95.00% 0.01699 255.66)"
+          "oklch(15.00% 0.05266 253.73)",
+          "oklch(26.43% 0.05266 253.73)",
+          "oklch(37.86% 0.05266 253.73)",
+          "oklch(49.29% 0.05266 253.73)",
+          "oklch(60.71% 0.05266 253.73)",
+          "oklch(72.14% 0.05266 253.73)",
+          "oklch(83.57% 0.05266 253.73)",
+          "oklch(95.00% 0.05266 253.73)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       },
@@ -150,17 +150,17 @@
       },
       "primary-hover": {
         "role": "primary",
-        "displayName": "primary-hover",
-        "canonical": "#94f6ca",
+        "displayName": "Gelo iluminado",
+        "canonical": "#d5ebff",
         "tonalRamp": [
-          "oklch(15.00% 0.11201 163.73)",
-          "oklch(26.43% 0.11201 163.73)",
-          "oklch(37.86% 0.11201 163.73)",
-          "oklch(49.29% 0.11201 163.73)",
-          "oklch(60.71% 0.11201 163.73)",
-          "oklch(72.14% 0.11201 163.73)",
-          "oklch(83.57% 0.11201 163.73)",
-          "oklch(95.00% 0.11201 163.73)"
+          "oklch(15.00% 0.03590 245.62)",
+          "oklch(26.43% 0.03590 245.62)",
+          "oklch(37.86% 0.03590 245.62)",
+          "oklch(49.29% 0.03590 245.62)",
+          "oklch(60.71% 0.03590 245.62)",
+          "oklch(72.14% 0.03590 245.62)",
+          "oklch(83.57% 0.03590 245.62)",
+          "oklch(95.00% 0.03590 245.62)"
         ],
         "rampPurpose": "Exploração sintética do painel; não altera os tokens normativos nem representa uma escala implementada."
       }
@@ -180,6 +180,11 @@
         "name": "inspector-overlay",
         "value": "-10px 0 28px rgb(0 0 0 / .35)",
         "purpose": "Inspector aberto abaixo de 1280px."
+      },
+      {
+        "name": "player-notice",
+        "value": "0 6px 20px rgb(0 0 0 / .2)",
+        "purpose": "Avisos acima do player."
       }
     ],
     "motion": [
@@ -202,6 +207,13 @@
         "name": "mobile",
         "value": "520px"
       }
+    ],
+    "materials": [
+      {
+        "name": "shell-glass",
+        "value": "blur(18px)",
+        "purpose": "Backdrop-filter somente nos painéis do shell; fallback #18283d."
+      }
     ]
   },
   "components": [
@@ -209,17 +221,17 @@
       "name": "Botão primary",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Ação de navegação disponível.",
+      "description": "Ação disponível em cápsula arredondada.",
       "html": "<button class=\"ds-button-primary\">Buscar músicas</button>",
-      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;font:650 12px \"Geist\",sans-serif;padding:10px 16px;border-radius:8px;border:1px solid transparent;background:var(--primary);color:var(--bg);cursor:pointer;transition:background 160ms ease-out}.ds-button-primary:hover{background:#94f6ca}.ds-button-primary:focus-visible{outline:2px solid var(--primary);outline-offset:4px}"
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;font:650 12px \"Geist\",sans-serif;padding:10px 16px;border-radius:999px;border:1px solid transparent;background:var(--primary);color:var(--bg);cursor:pointer;transition:background 160ms ease-out}.ds-button-primary:hover{background:#d5ebff}.ds-button-primary:focus-visible{outline:2px solid var(--primary);outline-offset:4px}"
     },
     {
       "name": "Botão secondary",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Ação de navegação disponível.",
+      "description": "Ação disponível em cápsula arredondada.",
       "html": "<button class=\"ds-button-secondary\">Buscar músicas</button>",
-      "css": ".ds-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;font:650 12px \"Geist\",sans-serif;padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--raised);color:var(--ink);cursor:pointer;transition:background 160ms ease-out}.ds-button-secondary:hover{background:var(--hover)}.ds-button-secondary:focus-visible{outline:2px solid var(--primary);outline-offset:4px}"
+      "css": ".ds-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;font:650 12px \"Geist\",sans-serif;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--raised);color:var(--ink);cursor:pointer;transition:background 160ms ease-out}.ds-button-secondary:hover{background:var(--hover)}.ds-button-secondary:focus-visible{outline:2px solid var(--primary);outline-offset:4px}"
     },
     {
       "name": "Busca",
@@ -227,7 +239,7 @@
       "refersTo": "search-field",
       "description": "Campo de busca com foco de borda.",
       "html": "<div class=\"ds-search\"><label for=\"ds-query\">Busca</label><input id=\"ds-query\" type=\"search\" placeholder=\"Buscar músicas ou artistas…\"/></div>",
-      "css": ".ds-search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 12px;transition:border-color 160ms ease-out}.ds-search:focus-within{border-color:var(--primary)}.ds-search label{color:var(--primary);font:13px \"Geist\",sans-serif}.ds-search input{width:100%;min-width:0;height:42px;color:var(--ink);caret-color:var(--primary);background:transparent;border:0;outline:none;font:13px \"Geist\",sans-serif}.ds-search input::placeholder{color:var(--muted)}"
+      "css": ".ds-search{display:flex;align-items:center;gap:10px;background:rgb(22 34 53 / .55);border:1px solid var(--line);border-radius:18px;padding:4px 14px;transition:border-color 160ms ease-out}.ds-search:focus-within{border-color:var(--primary)}.ds-search label{color:var(--primary);font:13px \"Geist\",sans-serif}.ds-search input{width:100%;min-width:0;height:42px;color:var(--ink);caret-color:var(--primary);background:transparent;border:0;outline:none;font:13px \"Geist\",sans-serif}.ds-search input::placeholder{color:var(--muted)}"
     },
     {
       "name": "Navegação ativa",
@@ -235,7 +247,7 @@
       "refersTo": "nav-active",
       "description": "Navegação lateral com indicador ativo.",
       "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m16 16 4.5 4.5\"/></svg>Buscar</a></nav>",
-      "css": ".ds-nav a{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:8px;border-left:2px solid var(--primary);color:var(--primary);background:var(--raised);font:500 14px/1.5 \"Geist\",sans-serif;min-height:42px;text-decoration:none;transition:background 160ms ease-out,color 160ms ease-out}.ds-nav a:hover{color:var(--ink);background:var(--surface)}.ds-nav a:focus-visible{outline:2px solid var(--primary);outline-offset:4px}"
+      "css": ".ds-nav a{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:14px;border-left:0;color:var(--primary);background:rgb(185 222 255 / .12);font:500 14px/1.5 \"Geist\",sans-serif;min-height:42px;text-decoration:none;transition:background 160ms ease-out,color 160ms ease-out}.ds-nav a:hover{color:var(--ink);background:var(--surface)}.ds-nav a:focus-visible{outline:2px solid var(--primary);outline-offset:4px}"
     },
     {
       "name": "Fonte YouTube",
@@ -249,30 +261,30 @@
       "name": "Destaque da busca",
       "kind": "card",
       "refersTo": "result-highlight",
-      "description": "Primeiro resultado; não indica faixa em reprodução.",
+      "description": "Primeiro resultado com ação explícita de reprodução.",
       "html": "<section class=\"ds-highlight\"><div class=\"ds-art\"><svg width=\"42\" height=\"42\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M9 18V5l11-2v13M9 9l11-2\"/><ellipse cx=\"6\" cy=\"18\" rx=\"3\" ry=\"2\"/><ellipse cx=\"17\" cy=\"16\" rx=\"3\" ry=\"2\"/></svg></div><div class=\"ds-copy\"><h2>Título da faixa</h2><p>Artista / canal</p><span>Destaque da busca</span></div></section>",
-      "css": ".ds-highlight{display:flex;align-items:center;gap:24px;min-height:178px;padding:20px;background:var(--raised);border:1px solid var(--line);border-radius:12px}.ds-art{flex-shrink:0;width:176px;aspect-ratio:16/10;display:grid;place-items:center;background:var(--hover);color:var(--muted);border-radius:8px}.ds-copy{min-width:0;font-family:\"Geist\",sans-serif}.ds-copy h2{font-size:23px;font-weight:600;line-height:1.3;margin:10px 0 0;letter-spacing:-.025em;overflow-wrap:anywhere}.ds-copy p{font-size:12px;color:var(--muted);margin:8px 0 0}.ds-copy span{font-size:10px;color:var(--muted);display:block;margin-top:12px}@media(max-width:520px){.ds-highlight{gap:12px;padding:14px;min-height:140px}.ds-art{width:72px;aspect-ratio:1}.ds-copy h2{font-size:16px}}"
+      "css": ".ds-highlight{display:flex;align-items:center;gap:24px;min-height:178px;padding:20px;background:linear-gradient(115deg,rgb(81 118 153 / .32),rgb(31 44 66 / .65));border:1px solid var(--line);border-radius:24px}.ds-art{flex-shrink:0;width:176px;aspect-ratio:16/10;display:grid;place-items:center;background:var(--hover);color:var(--muted);border-radius:18px}.ds-copy{min-width:0;font-family:\"Geist\",sans-serif}.ds-copy h2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:23px;font-weight:600;line-height:1.3;margin:10px 0 0;letter-spacing:-.025em;overflow-wrap:anywhere}.ds-copy p{font-size:12px;color:var(--muted);margin:8px 0 0}.ds-copy span{font-size:10px;color:var(--muted);display:block;margin-top:12px}@media(max-width:899px){.ds-highlight{gap:16px;padding:16px}.ds-art{width:120px}.ds-copy h2{font-size:19px}}@media(max-width:520px){.ds-highlight{gap:10px;padding:14px;min-height:140px}.ds-art{width:60px;aspect-ratio:1}.ds-copy h2{font-size:17px}}"
     }
   ],
   "narrative": {
-    "northStar": "WaveMix Studio",
-    "overview": "WaveMix Studio organiza a descoberta musical como um estúdio escuro: superfícies carvão, listas compactas e menta para orientação e ações. A tipografia discreta mantém títulos, artistas e duração legíveis. O conteúdo musical conduz a composição; animações ficam restritas às mudanças de estado.",
+    "northStar": "Frosted Studio",
+    "overview": "Frosted Studio mantém a organização WaveMix Studio: navegação lateral, busca central, inspector de faixa e fila, e player persistente. Vidro translúcido azul/ardósia, campos de cor estáticos e formas arredondadas dão profundidade sem disputar atenção com títulos e metadados.\n\nO usuário substituiu explicitamente carvão/menta por vidro e curvas suaves. Este documento captura a cascata efetiva de `wwwroot/Styles/voxen.css`, fontes locais e componentes Blazor; a referência WaveMix define a topologia, não a paleta atual.",
     "keyCharacteristics": [
-      "Superfícies escuras em camadas tonais.",
-      "Busca e metadados com alta densidade legível.",
-      "Navegação lateral e deck persistente.",
-      "Estados vazios e controles indisponíveis honestos."
+      "Vidro azul com acento gelo.",
+      "Listas compactas e ações de reprodução explícitas.",
+      "Navegação lateral, inspector responsivo e player persistente.",
+      "Estados de carregamento, erro, vazio e indisponibilidade legíveis."
     ],
     "rules": [],
     "dos": [
-      "Do preservar a paleta carvão e o acento menta nos estados ativos.",
+      "Do preservar vidro azul e acento gelo nos estados ativos.",
       "Do manter foco visível, rótulos acessíveis e redução de movimento.",
-      "Do representar busca, carregamento, erro e ausência de resultados com texto claro."
+      "Do preservar a timeline utilizável no player móvel e títulos completos acessíveis."
     ],
     "donts": [
-      "Don't apresentar fila, biblioteca ou reprodução como recursos disponíveis antes da implementação.",
-      "Don't substituir os SVGs próprios por fontes de ícones ou dependências decorativas.",
-      "Don't transformar miniaturas ou títulos longos em causas de overflow."
+      "Don't reintroduzir carvão/menta como identidade principal.",
+      "Don't adicionar blur a cada linha ou animação contínua aos campos de cor.",
+      "Don't apresentar SoundCloud sem credenciais ou biblioteca futura como disponíveis."
     ]
   }
 }

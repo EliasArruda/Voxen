@@ -1,33 +1,19 @@
-# Progresso — 2026-10-06
+# Progresso do Voxen
 
-## Concluído
+## 2026-10-06 — player funcional e Frosted Studio
 
-Etapas 1–4 do pedido original: modelo unificado, serviço YouTube, busca dinâmica e interface de resultados.
-Mantidos C#/.NET 10/PhotinoX, versões dos pacotes e `Routes` como root. `_imports.razor` corrigido para `_Imports.razor`.
-Build verificado em cada etapa. Busca real no YouTube retornou metadados e respeitou limite de 20 resultados.
+- Etapas 1–12 implementadas: Track, busca YouTube debounce/cancel, resultados, fila, player central, fim/avanço, controles, recomendações e autoplay.
+- Etapa 13 preparada: provider oficial SoundCloud com OAuth cache/refresh, busca e HLS. Sem credenciais, fonte fica desativada; fixtures HTTP passam. Falta homologação real.
+- Redesign autorizado: fundo glass azul/ardósia, gelo, curvas e Studio de três colunas. Review independente: SHIP da superfície compartilhada em Chromium; DESIGN.md e sidecar atualizados.
+- Após recusa de instalação GStreamer, reprodução desktop mudou para FFmpeg + SDL3 distribuído pelo NuGet. FFmpeg do sistema é aceito em desenvolvimento; pacote portátil inclui binário verificado.
+- Pacote Linux self-contained gerado. `scripts/publish.py` prepara Linux/Windows x64 sem exigir instalação separada de FFmpeg nem SDK .NET no destino.
+- Checks determinísticos C#, regressão JS e engine nativo com SDL dummy passaram. Áudio YouTube real passou em Chromium e no Photino/Linux: play, pause, seek, resume, stop. UI testada em 1440/1280/1000/390px, sem overflow horizontal.
+- Revisões de código corrigiram races de recomendação tardia, prioridade manual, autoplay desligado após prefetch, callbacks antigos, Stop/Play concorrentes, pause/resume durante seek e entrega de sinais nativos.
+- Git: main contém baseline mínimo; implementação em feat/functional-glass-player, commits por incremento, PR de rascunho. Não fazer merge automaticamente.
 
-## Validação
+## Limites e próximo passo
 
-- Checks de serviço em `Tests/Voxen.Checks.csproj`.
-- PhotinoX iniciou no Linux e carregou `app://localhost/`.
-- Componentes reais testados em host Blazor web temporário com provider controlado: resultados, vazio, erro, retry, limpeza e navegação.
-- Capturas inspecionadas em Chromium; larguras 1000, 768 e 390 px sem overflow horizontal.
-- A validação Chromium não substitui inspeção dentro da WebView nativa. Windows não foi testado.
-
-## Próximo passo
-
-Implementar etapas 5–6: QueueService e adicionar resultado à fila. Depois conectar reprodução real nas etapas 7–10.
-
-## Adaptação WaveMix Studio — 2026-10-06
-
-- Conexão MCP Stitch testada com sucesso: listagem de projetos, telas e leitura do projeto WaveMix.
-- Usuário selecionou Universal Search & Studio Player, não a variante Spotify Atmosphere.
-- Layout Studio adaptado ao Voxen: superfícies charcoal, accent mint, Geist/Inter locais, ícones SVG, lista compacta, destaque do primeiro resultado, inspector e dock.
-- Estado de produto preservado: fila vazia e reprodução indisponível; nenhuma alegação de lossless ou integração SoundCloud ativa.
-- Home possui sugestões que iniciam buscas reais por query string.
-- Build sem warnings/erros e 11 checks passaram, incluindo requests reais ao YouTube.
-- Playwright: resultados, vazio, erro, retry, limpeza, painel de fila, navegação e sugestões.
-- Capturas de busca com dados reais em 1440, 1280, 1000, 768 e 390px, sem overflow horizontal. Home inspecionada em desktop/mobile.
-- Contraste medido: texto18.44, secundário7.30, botão14.06, badgeYouTube6.46.
-- Revisão independente: ship, sem problemas bloqueantes. Inspeção do Windows e leitor de tela permanece pendente.
-- Próximo incremento continua sendo etapas5–6: QueueService e adicionar músicas à fila.
+- Homologar API/áudio SoundCloud quando houver credenciais locais.
+- CI executa build, checks, testes FFmpeg/SDL dummy e gera pacotes Linux/Windows. Execução gráfica Windows ainda não foi validada.
+- Biblioteca, favoritos, playlists persistidas, instaladores e personalização por UI são próximos incrementos. Tokens CSS estão documentados para evolução.
+- Não publicar releases nem alterar visibilidade/proteções sem pedido explícito.
