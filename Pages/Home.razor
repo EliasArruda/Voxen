@@ -1,8 +1,31 @@
 @page "/"
-<div class="page-heading"><div><h1>Seu próximo som.</h1><p class="page-description">Um espaço para descobrir, explorar e voltar ao que você gosta.</p></div><span class="studio-label">VOXEN STUDIO</span></div>
-<section class="home-spotlight">
-    <div class="spotlight-content"><span class="source-badge"><Icon Name="youtube" Size="14" />YouTube</span><h2>Encontre seu<br />próximo som.</h2><p>Aquela música que não sai da cabeça. Um artista que você ainda não conhece. Comece pela busca.</p><a class="primary-button" href="/search"><Icon Name="search" Size="17" />Explorar músicas<Icon Name="arrow" Size="17" /></a></div>
+@implements IDisposable
+@inject RecommendationService Recommendations
+@inject LibraryService Library
+@inject PlayerService Player
+@inject QueueService Queue
+@inject PlaybackCoordinator Playback
+<div class="page-heading"><div><h1>Seu próximo som.</h1><p class="page-description">Um espaço para descobrir, explorar e voltar ao que você gosta.</p></div></div>
+<section class="personal-discovery" aria-labelledby="personal-title" aria-busy="@(_loading ? "true" : "false")">
+    <div class="section-heading"><h2 id="personal-title">@(Library.History.Count > 0 || Library.Favorites.Count > 0 ? "Feito para o seu ritmo" : "Descobertas para começar")</h2><button class="text-button" disabled="@_loading" @onclick="LoadRecommendations">Atualizar descobertas</button></div>
+    <p class="discovery-context">@(Library.History.Count > 0 || Library.Favorites.Count > 0 ? "Novas faixas a partir dos artistas que você ouviu e favoritou. As últimas 20 ouvidas ficam fora desta seleção." : "Ouça e favorite músicas. As próximas recomendações vão acompanhar seu gosto.")</p>
+    @if (_loading) { <p class="inline-notice" role="status">Encontrando novos sons…</p> }
+    else if (_error is not null) { <div class="empty-state" role="alert"><h3>As descobertas precisam de mais um instante.</h3><p>@_error</p><button class="secondary-button" @onclick="LoadRecommendations">Tentar novamente</button></div> }
+    else if (_recommendations.Count > 0)
+    {
+        <ol class="recommendation-list" aria-label="Recomendações">
+        @foreach (var item in _recommendations)
+        {
+            <li @key="LibraryService.Key(item.Track)"><button class="recommendation-play" disabled="@(!Player.Ready)" aria-label="Reproduzir @item.Track.Title" @onclick="() => Playback.PlayTrackAsync(item.Track)"><span class="recommendation-cover">@if (item.Track.ThumbnailUrl.Length > 0) { <img src="@item.Track.ThumbnailUrl" alt="" loading="lazy" referrerpolicy="no-referrer" /> } else { <Icon Name="play" Size="18" /> }</span><span><strong title="@item.Track.Title">@item.Track.Title</strong><small>@item.Track.Artist</small><small class="recommendation-reason">@item.Reason</small></span></button><TrackActions Track="item.Track" /></li>
+        }
+        </ol>
+    }
+    else { <div class="empty-state"><h3>Você já passou por esta seleção.</h3><p>Ouça outros artistas ou atualize as descobertas para ampliar suas referências.</p><a class="secondary-button" href="/search">Buscar músicas</a></div> }
 </section>
+@if (Library.History.Count > 0)
+{
+    <section class="discovery-section"><div class="section-heading"><h2>Ouvidas recentemente</h2><a class="text-button" href="/library">Ver biblioteca</a></div><TrackResults Tracks="@Library.History.Take(5).Select(entry => entry.Track).ToArray()" /></section>
+}
 <section class="discovery-section" aria-labelledby="discovery-title">
     <div class="section-heading"><h2 id="discovery-title">Explore no seu ritmo</h2><span>Buscas para começar</span></div>
     <div class="discovery-grid">
@@ -13,3 +36,22 @@
     </div>
 </section>
 <div class="release-note"><Icon Name="info" Size="19" /><p>Busque, dê play e monte sua fila. Ative recomendações para continuar descobrindo.</p></div>
+
+@code {
+    private IReadOnlyList<RecommendedTrack> _recommendations = [];
+    private bool _loading, _disposed;
+    private string? _error;
+    private CancellationTokenSource? _request;
+    protected override async Task OnInitializedAsync() { Library.Changed += Refresh; Player.Changed += Refresh; await LoadRecommendations(); }
+    private async Task LoadRecommendations()
+    {
+        _request?.Cancel(); var request = new CancellationTokenSource(TimeSpan.FromSeconds(35)); _request = request;
+        _loading = true; _error = null;
+        try { var items = await Recommendations.DiscoverAsync(Player.CurrentTrack, Queue.Entries, 8, request.Token); if (!_disposed && _request == request) _recommendations = items; }
+        catch (OperationCanceledException) { if (!_disposed && _request == request) _error = "A busca demorou demais. Tente novamente."; }
+        catch (Exception) { if (!_disposed && _request == request) _error = "Verifique sua conexão e tente atualizar as descobertas."; }
+        finally { if (_request == request) { _request = null; _loading = false; } request.Dispose(); }
+    }
+    private void Refresh() { if (!_disposed) _ = InvokeAsync(StateHasChanged); }
+    public void Dispose() { _disposed = true; _request?.Cancel(); Library.Changed -= Refresh; Player.Changed -= Refresh; }
+}

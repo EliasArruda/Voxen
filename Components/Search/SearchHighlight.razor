@@ -1,3 +1,4 @@
+@implements IDisposable
 @inject PlaybackCoordinator Playback
 @inject PlayerService Player
 <section class="result-highlight" aria-label="Destaque da busca">
@@ -9,5 +10,8 @@
     <div class="highlight-copy"><span class="source-badge"><Icon Name="@(Track.Source == TrackSource.YouTube ? "youtube" : "cloud")" Size="13" />@Track.Source</span><h2 title="@Track.Title">@Track.Title</h2><p>@Track.Artist</p><button class="highlight-play" disabled="@(!Player.Ready)" @onclick="() => Playback.PlayTrackAsync(Track)"><Icon Name="play" Size="14" />Ouvir agora</button></div>
 </section>
 @code {
+    protected override void OnInitialized() => Player.Changed += Refresh;
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Player.Changed -= Refresh;
     [Parameter, EditorRequired] public Track Track { get; set; } = default!;
 }

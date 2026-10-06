@@ -15,7 +15,7 @@ else
     }
     </ol>
 }
-<div class="autoplay-setting"><div><strong>Continuar descobrindo</strong><small>Recomendações ao terminar a fila</small></div><button class="toggle-switch" aria-label="Reprodução automática" aria-pressed="@Playback.Autoplay" @onclick="Playback.ToggleAutoplay"><span></span></button></div>
+<div class="autoplay-setting"><div><strong>Continuar descobrindo</strong><small>Recomendações ao terminar a fila</small></div><button class="toggle-switch" aria-label="Reprodução automática" aria-pressed="@(Playback.Autoplay ? "true" : "false")" @onclick="Playback.ToggleAutoplay"><span></span></button></div>
 @if (Playback.Notice is not null) { <p class="queue-notice" role="status">@Playback.Notice</p> }
 @code {
     protected override void OnInitialized() { Queue.Changed += Refresh; Player.Changed += Refresh; Playback.Changed += Refresh; }

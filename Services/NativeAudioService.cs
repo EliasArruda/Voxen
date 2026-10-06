@@ -76,7 +76,7 @@ public sealed class NativeAudioService : IAsyncDisposable
     public async Task SeekAsync(double seconds)
     {
         await _commands.WaitAsync();
-        try { if (_url.Length == 0) return; var paused = _paused; await StopCoreAsync(); StartDecoder(seconds, paused); }
+        try { if (_url.Length == 0) return; var paused = _paused; await StopCoreAsync(); StartDecoder(seconds, paused); Emit("seeked"); }
         finally { _commands.Release(); }
     }
     public async Task PauseAsync()

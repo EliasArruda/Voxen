@@ -14,6 +14,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     public double Duration { get; private set; }
     public double Volume { get; private set; } = .7;
     public string? Error { get; private set; }
+    public bool IsSeeking { get; private set; }
     public bool Ready => _module is not null || native?.Ready == true;
     public event Action? Changed;
     public event Func<Task>? Ended;
@@ -40,7 +41,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         _resolution?.Cancel();
         var resolution = new CancellationTokenSource(TimeSpan.FromSeconds(40));
         _resolution = resolution;
-        CurrentTrack = track; Status = PlaybackStatus.Loading; Error = null; Position = Duration = 0;
+        IsSeeking = false; CurrentTrack = track; Status = PlaybackStatus.Loading; Error = null; Position = Duration = 0;
         Changed?.Invoke();
         try
         {
@@ -76,12 +77,18 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         if (native is not null && native.Ready) await native.StopAsync(version);
         else if (_module is not null) await _module.InvokeVoidAsync("stop", version);
         if (version != _version) return;
-        CurrentTrack = null; Status = PlaybackStatus.Idle; Position = Duration = 0; Error = null; Changed?.Invoke();
+        IsSeeking = false; CurrentTrack = null; Status = PlaybackStatus.Idle; Position = Duration = 0; Error = null; Changed?.Invoke();
     }
     public async Task SeekAsync(double seconds)
     {
-        if (Duration > 0) { if (native is not null) await native.SeekAsync(Math.Clamp(seconds, 0, Duration));
-            else if (_module is not null) await _module.InvokeVoidAsync("seek", Math.Clamp(seconds, 0, Duration)); }
+        if (Duration <= 0 || !Ready) return;
+        IsSeeking = true; Changed?.Invoke();
+        try
+        {
+            if (native is not null) await native.SeekAsync(Math.Clamp(seconds, 0, Duration));
+            else if (_module is not null) await _module.InvokeVoidAsync("seek", Math.Clamp(seconds, 0, Duration));
+        }
+        catch { IsSeeking = false; Changed?.Invoke(); throw; }
     }
     public async Task SetVolumeAsync(double value)
     {
@@ -94,6 +101,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     public async Task OnAudioEvent(long version, string type, double position, double duration)
     {
         if (version != _version) return;
+        if (type is "seeked" or "error" or "ended") IsSeeking = false;
         Position = double.IsFinite(position) ? Math.Max(0, position) : 0;
         Duration = double.IsFinite(duration) ? Math.Max(0, duration) : 0;
         Status = type switch { "playing" => PlaybackStatus.Playing, "pause" => PlaybackStatus.Paused,

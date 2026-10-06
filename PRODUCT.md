@@ -19,6 +19,6 @@ See `.impeccable/surfaces/studio.md` for the direction contract.
 - Native WebView UI and one native audio stream; FFmpeg + bundled SDL3, no full-track downloads or GStreamer requirement.
 - Provider-independent metadata; simple services and small components.
 - Real controls and honest loading, error and empty states.
-- Queue is session-only; autoplay is opt-in and respects manual choices.
-- SoundCloud remains disabled without local environment credentials. Live validation requires those credentials.
-- Library, favorites and persisted playlists are future work and labeled accordingly.
+- Queue is session-only; autoplay is opt-in, reacts when enabled after queue end, and respects manual choices.
+- Public SoundCloud website search and FFmpeg playback work without user credentials. Configured official OAuth is preferred. Internal public endpoints may change. Live Linux playback was validated.
+- Saved tracks, favorites, playlists and qualified listening history persist as metadata in a bounded local store. A per-user single-instance lock protects writes. Recommendations use local artist/title affinity, recency and diversity.
