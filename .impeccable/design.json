@@ -284,7 +284,7 @@
     "donts": [
       "Don't reintroduzir carvão/menta como identidade principal.",
       "Don't adicionar blur a cada linha ou animação contínua aos campos de cor.",
-      "Don't apresentar SoundCloud sem credenciais ou biblioteca futura como disponíveis."
+      "Don't ocultar estados de erro das fontes públicas ou prometer reprodução offline a partir dos metadados salvos."
     ]
   }
 }

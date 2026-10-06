@@ -1,10 +1,10 @@
 {
   "name": "Voxen",
   "version": "1.0.0",
-  "description": "",
+  "description": "Desktop music player built with Photino, Blazor and native FFmpeg/SDL audio",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node Tests/audio.checks.mjs && node Tests/shortcuts.checks.mjs"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +13,6 @@
   "dependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "tailwindcss": "^4.3.3"
-  }
+  },
+  "private": true
 }
