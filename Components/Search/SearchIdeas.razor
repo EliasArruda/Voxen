@@ -1,0 +1,21 @@
+@inject LibraryService Library
+<section class="search-ideas" aria-labelledby="search-ideas-title">
+    <div class="ideas-heading"><h2 id="search-ideas-title">Comece por um som.</h2><p>Uma música conhecida. Um artista novo. As duas fontes, no mesmo lugar.</p></div>
+    @if (References.Length > 0)
+    {
+        <div class="artist-references"><span>Do seu repertório</span>@foreach (var artist in References) { <a href="@SearchUrl(artist)">@artist<Icon Name="arrow" Size="13" /></a> }</div>
+    }
+    <div class="ideas-composition">
+        <a class="ideas-feature" href="/search?q=Nujabes%20Feather"><span class="ideas-wave" aria-hidden="true"><Icon Name="wave" Size="104" /></span><span><h3>Deixe o dia<br />encontrar o ritmo.</h3><p>Nujabes · Feather</p><span class="ideas-feature-action">Explorar esta música <Icon Name="arrow" Size="16" /></span></span></a>
+        <div class="ideas-tracks"><h3>Vale uma busca</h3>
+            <a href="/search?q=Daft%20Punk%20Get%20Lucky"><span><strong>Get Lucky</strong><small>Daft Punk · groove para seguir</small></span><Icon Name="arrow" Size="16" /></a>
+            <a href="/search?q=Jorge%20Ben%20Taj%20Mahal"><span><strong>Taj Mahal</strong><small>Jorge Ben Jor · balanço brasileiro</small></span><Icon Name="arrow" Size="16" /></a>
+            <a href="/search?q=Tame%20Impala%20The%20Less%20I%20Know%20The%20Better"><span><strong>The Less I Know the Better</strong><small>Tame Impala · outra frequência</small></span><Icon Name="arrow" Size="16" /></a>
+        </div>
+    </div>
+    <div class="ideas-moods" aria-label="Ideias de pesquisa"><a href="/search?q=lofi%20hip%20hop">Para focar</a><a href="/search?q=jazz%20instrumental">Sem pressa</a><a href="/search?q=rock%20alternativo">Guitarras ligadas</a><a href="/search?q=ambient%20music">Respirar fundo</a></div>
+</section>
+@code {
+    private string[] References => Library.History.Select(item => item.Track.Artist).Concat(Library.Favorites.Select(track => track.Artist)).Where(artist => !string.IsNullOrWhiteSpace(artist)).Distinct(StringComparer.OrdinalIgnoreCase).Take(3).ToArray();
+    private static string SearchUrl(string query) => "/search?q=" + Uri.EscapeDataString(query);
+}

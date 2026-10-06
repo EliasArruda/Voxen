@@ -44,3 +44,9 @@
 - Professional Portuguese README covers installation, library, recommendation signals, shortcuts, integration limits, data storage and contribution. Includes a fresh real SoundCloud search/playback capture and vector brand mark.
 - Portable packages include documentation and its local image assets. Final Linux package generated; native startup and second-launch rejection passed.
 - Final smoke exposed session-local mutex scope across Linux shells. Explicit user-only, cross-session options fixed it; two independent native launches passed: second exits with the existing-window message. Independent review approved the fix.
+
+## 2026-10-06 — Universal search and music atmosphere
+- Todas defaults to concurrent YouTube/SoundCloud search, progressive first-source results, bounded source deadlines and explicit partial failure. Source IDs remain distinct and stale responses are rejected.
+- Empty search now offers curated song queries, mood queries and local artist references without fabricated search results.
+- Cover images tint glass through a bounded 800 ms crossfade; result arrival uses 400 ms reveal. Reduced motion and responsive controls verified.
+- Deterministic combined-source checks and live Chromium mixed results/SoundCloud playback passed. Baseline native startup measured: SoundCloud 721–788 ms; YouTube 458–2238 ms, dominated by stream resolution. Next: short-lived preparation cache and final packages.
