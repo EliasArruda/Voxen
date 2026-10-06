@@ -72,7 +72,9 @@ if (args.Contains("--youtube"))
     Check(tracks.Count is > 0 and <= YouTubeService.ResultLimit, "Live YouTube search returns bounded results");
     Check(tracks.All(t => t.Id.Length > 0 && t.Title.Length > 0 && t.Artist.Length > 0 && t.Url.StartsWith("https://")), "Live search maps required metadata");
 }
+await AudioPreparationChecks.RunAsync();
 await CombinedSearchChecks.RunAsync();
+await PlaybackChecks.StartupDeadlineAsync();
 await PlaybackChecks.RunAsync();
 await SoundCloudChecks.RunAsync();
 await SoundCloudWebChecks.RunAsync();

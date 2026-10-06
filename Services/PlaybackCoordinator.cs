@@ -13,7 +13,8 @@ public sealed class PlaybackCoordinator : IDisposable
     public string? Notice { get; private set; }
     public event Action? Changed;
     public PlaybackCoordinator(QueueService queue, PlayerService player, RecommendationService recommendations)
-    { _queue = queue; _player = player; _recommendations = recommendations; player.Ended += AdvanceAsync; player.Changed += PrefetchWhenNeeded; }
+    { _queue = queue; _player = player; _recommendations = recommendations; player.Ended += AdvanceAsync; player.Changed += PrefetchWhenNeeded; queue.Changed += PrepareNext; }
+    private void PrepareNext() { if (_queue.Next is { } next) _ = _player.PrepareAsync(next.Track); }
     private void CancelRecommendation() { _recommendation?.Cancel(); _prefetch = null; _requestedFor = null; _candidate = null; Notice = null; }
     public Task PlayTrackAsync(Track track)
     {
@@ -85,7 +86,7 @@ public sealed class PlaybackCoordinator : IDisposable
             var recommendation = await _recommendations.FindNextAsync(track, _queue.Entries, request.Token);
             request.Token.ThrowIfCancellationRequested();
             if (!Autoplay || _queue.CurrentKey != key || _queue.Next is not null) return;
-            if (recommendation is not null) { _candidate = recommendation; Notice = "Próxima recomendação pronta."; }
+            if (recommendation is not null) { _candidate = recommendation; _ = _player.PrepareAsync(recommendation); Notice = "Próxima recomendação pronta."; }
             else Notice = "Nenhuma nova recomendação disponível.";
             Changed?.Invoke();
         }
@@ -93,5 +94,5 @@ public sealed class PlaybackCoordinator : IDisposable
         catch (Exception) { if (!request.IsCancellationRequested) { Notice = "Não foi possível buscar recomendações. Sua fila continua disponível."; Changed?.Invoke(); } }
         finally { if (_recommendation == request) _recommendation = null; request.Dispose(); }
     }
-    public void Dispose() { CancelRecommendation(); _player.Ended -= AdvanceAsync; _player.Changed -= PrefetchWhenNeeded; }
+    public void Dispose() { CancelRecommendation(); _player.Ended -= AdvanceAsync; _player.Changed -= PrefetchWhenNeeded; _queue.Changed -= PrepareNext; }
 }

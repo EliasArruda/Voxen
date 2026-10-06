@@ -16,7 +16,7 @@
         <div class="dock-timeline"><span>@Time(Player.Position)</span><input aria-label="Posição da faixa" type="range" min="0" max="@Math.Max(1, Player.Duration)" step="1" value="@Player.Position" disabled="@(Player.Duration <= 0)" @onchange="Seek" /><span>@Time(Player.Duration)</span></div>
     </div>
     <div class="dock-output"><Icon Name="volume" Size="18" /><input aria-label="Volume" type="range" min="0" max="100" value="@(Player.Volume * 100)" @oninput="Volume" /><span>@((int)(Player.Volume * 100))%</span></div>
-    @if (Player.Status == PlaybackStatus.Loading) { <p class="player-notice" role="status">Preparando áudio…</p> }
+    @if (Player.Status == PlaybackStatus.Loading) { <p class="player-notice" role="status">@Player.LoadingMessage</p> }
     @if (Player.Error is not null) { <p class="player-notice error-notice" role="alert">@Player.Error</p> }
 </footer>
 @code {

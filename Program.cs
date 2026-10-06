@@ -20,7 +20,8 @@ builder.Services.AddSingleton<ITrackSearchProvider>(services => services.GetRequ
 builder.Services.AddSingleton<Func<SearchSession>>(services =>
     () => ActivatorUtilities.CreateInstance<SearchSession>(services));
 
-builder.Services.AddSingleton<IAudioSourceProvider>(services => services.GetRequiredService<MusicProviders>());
+builder.Services.AddSingleton<AudioPreparationService>(services => new(services.GetRequiredService<MusicProviders>()));
+builder.Services.AddSingleton<IAudioSourceProvider>(services => services.GetRequiredService<AudioPreparationService>());
 builder.Services.AddSingleton<AudioProxy>();
 builder.Services.AddSingleton<NativeAudioService>();
 builder.Services.AddSingleton<PlayerService>();

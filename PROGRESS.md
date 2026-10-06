@@ -50,3 +50,10 @@
 - Empty search now offers curated song queries, mood queries and local artist references without fabricated search results.
 - Cover images tint glass through a bounded 800 ms crossfade; result arrival uses 400 ms reveal. Reduced motion and responsive controls verified.
 - Deterministic combined-source checks and live Chromium mixed results/SoundCloud playback passed. Baseline native startup measured: SoundCloud 721–788 ms; YouTube 458–2238 ms, dominated by stream resolution. Next: short-lived preparation cache and final packages.
+
+## 2026-10-06 — Audio preparation and bounded startup
+- PR #6 merged after passing Linux/Windows CI and independent code/UI reviews.
+- Added single-flight90s stream metadata cache, max8 speculative entries. Highlight, play focus/hover, next queue track and autoplay candidate prewarm without downloading audio files.
+- Reviewer findings resolved: watchdog now covers click through first audio and stops stale backend; foreground renews pending preparation; successful cache entries survive resolution deadlines. Regression checks cover each.
+- Native real Linux play/pause/seek/resume/stop passed both sources; warmed clicks measured252ms SoundCloud and100ms YouTube. Decoder benchmark measured51/96ms. These are observed test values, not network guarantees.
+- Final Linux/Windows checks and refreshed portable package follow.

@@ -2,12 +2,15 @@ using Microsoft.JSInterop;
 using Voxen.Models;
 namespace Voxen.Services;
 public enum PlaybackStatus { Idle, Loading, Playing, Paused, Ended, Error }
-public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy proxy, NativeAudioService? native = null) : IAsyncDisposable
+public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy proxy, NativeAudioService? native = null, TimeSpan? startupTimeout = null) : IAsyncDisposable
 {
     private IJSObjectReference? _module;
     private DotNetObjectReference<PlayerService>? _reference;
     private CancellationTokenSource? _resolution;
     private long _version;
+    private readonly TimeSpan _startupTimeout = startupTimeout ?? TimeSpan.FromSeconds(20);
+    private CancellationTokenSource? _startup;
+    private Func<Func<Task>, Task>? _dispatch;
     public Track? CurrentTrack { get; private set; }
     public PlaybackStatus Status { get; private set; }
     public double Position { get; private set; }
@@ -15,12 +18,15 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     public double Volume { get; private set; } = .7;
     public string? Error { get; private set; }
     public bool IsSeeking { get; private set; }
+    public string LoadingMessage { get; private set; } = "Conectando à fonte…";
+    public Task PrepareAsync(Track track) => provider is AudioPreparationService preparation ? preparation.PrepareAsync(track) : Task.CompletedTask;
     public bool Ready => _module is not null || native?.Ready == true;
     public event Action? Changed;
     public event Func<Task>? Ended;
     public async Task InitializeAsync(IJSRuntime js, Func<Func<Task>, Task>? dispatch = null)
     {
         if (Ready) return;
+        _dispatch = dispatch;
         if (native is not null)
         {
             try { await native.InitializeAsync(signal => dispatch is not null
@@ -39,16 +45,20 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         if (!Ready) return;
         var version = ++_version;
         _resolution?.Cancel();
-        var resolution = new CancellationTokenSource(TimeSpan.FromSeconds(40));
+        CancelStartup(); _startup = new CancellationTokenSource();
+        var resolution = new CancellationTokenSource(_startupTimeout);
         _resolution = resolution;
+        LoadingMessage = "Conectando à fonte…";
         IsSeeking = false; CurrentTrack = track; Status = PlaybackStatus.Loading; Error = null; Position = Duration = 0;
         Changed?.Invoke();
+        _ = WatchStartupAsync(version, _startup.Token);
         try
         {
             if (native is not null) await native.StopAsync(version); else await _module!.InvokeVoidAsync("stop", version);
             var resource = await provider.ResolveAsync(track, resolution.Token);
             resolution.Token.ThrowIfCancellationRequested();
             if (version != _version) return;
+            LoadingMessage = "Iniciando áudio…"; Changed?.Invoke();
             var url = await proxy.PublishAsync(resource, version, resolution.Token);
             if (version != _version) return;
             if (native is not null) await native.LoadAsync(url, version, track.Duration?.TotalSeconds ?? 0);
@@ -58,6 +68,8 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         catch (Exception) when (version != _version) { }
         catch (Exception) when (version == _version)
         {
+            CancelStartup();
+            if (provider is AudioPreparationService preparation) preparation.Invalidate(track);
             Status = PlaybackStatus.Error;
             Error = "Não foi possível reproduzir esta faixa. Tente novamente ou escolha outra.";
             Changed?.Invoke();
@@ -73,7 +85,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     }
     public async Task StopAsync()
     {
-        var version = ++_version; _resolution?.Cancel(); proxy.Clear();
+        var version = ++_version; CancelStartup(); _resolution?.Cancel(); proxy.Clear();
         if (native is not null && native.Ready) await native.StopAsync(version);
         else if (_module is not null) await _module.InvokeVoidAsync("stop", version);
         if (version != _version) return;
@@ -101,19 +113,41 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     public async Task OnAudioEvent(long version, string type, double position, double duration)
     {
         if (version != _version) return;
+        if (type is "playing" or "pause" or "error" or "ended") CancelStartup();
         if (type is "seeked" or "error" or "ended") IsSeeking = false;
         Position = double.IsFinite(position) ? Math.Max(0, position) : 0;
         Duration = double.IsFinite(duration) ? Math.Max(0, duration) : 0;
         Status = type switch { "playing" => PlaybackStatus.Playing, "pause" => PlaybackStatus.Paused,
             "ended" => PlaybackStatus.Ended, "error" => PlaybackStatus.Error, _ => Status };
         if (type == "playing") Error = null;
+        if (type == "error" && CurrentTrack is { } failed && provider is AudioPreparationService preparation) preparation.Invalidate(failed);
         if (type == "error") Error = "O áudio não iniciou. Verifique a conexão e os codecs do sistema, ou tente outra faixa.";
         Changed?.Invoke();
         if (type == "ended" && Ended is { } ended) await ended();
     }
+    private void CancelStartup() { _startup?.Cancel(); _startup?.Dispose(); _startup = null; }
+    private async Task WatchStartupAsync(long version, CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(_startupTimeout, token);
+            async Task Expire()
+            {
+                if (version != _version || Status != PlaybackStatus.Loading) return;
+                var stoppedVersion = ++_version; _resolution?.Cancel();
+                if (CurrentTrack is { } track && provider is AudioPreparationService preparation) preparation.Invalidate(track);
+                Status = PlaybackStatus.Error; Error = "O áudio demorou para iniciar. Tente novamente ou escolha outra faixa."; Changed?.Invoke();
+                if (native is not null) await native.StopAsync(stoppedVersion);
+                else if (_module is not null) await _module.InvokeVoidAsync("stop", stoppedVersion);
+            }
+            if (_dispatch is not null) await _dispatch(Expire); else await Expire();
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+        catch (Exception) { System.Diagnostics.Trace.WriteLine("Voxen: startup timeout cleanup failed."); }
+    }
     public async ValueTask DisposeAsync()
     {
-        _version++; _resolution?.Cancel();
+        _version++; CancelStartup(); _resolution?.Cancel();
         if (_module is not null)
         {
             try { await _module.InvokeVoidAsync("dispose"); await _module.DisposeAsync(); }
