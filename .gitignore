@@ -1,0 +1,20 @@
+# Build outputs and dependencies
+**/bin/
+**/obj/
+node_modules/
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.user
+*.suo
+.vs/
+# Temporary verification artifacts
+work/
+outputs/
+.playwright-cli/
+*.log
+.impeccable/mocks/
+.impeccable/review/
+.impeccable/build/
+.DS_Store
