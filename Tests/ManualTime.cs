@@ -3,6 +3,8 @@ internal sealed class ManualTime : TimeProvider
 {
     private DateTimeOffset _now = DateTimeOffset.UnixEpoch;
     private readonly List<Timer> _timers = [];
+    public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+    public override long GetTimestamp() { lock (_timers) return _now.Ticks; }
     public override DateTimeOffset GetUtcNow() { lock (_timers) return _now; }
     public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
     {

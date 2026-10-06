@@ -96,7 +96,7 @@ public sealed class NativeAudioService : IAsyncDisposable
     {
         _start = seconds; _written = 0; _paused = paused; ClearDevice(); SetGain(); PauseDevice();
         var start = new ProcessStartInfo(_ffmpeg) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
-        foreach (var argument in new[] { "-hide_banner", "-loglevel", "error", "-nostdin", "-threads", "1", "-ss", seconds.ToString(CultureInfo.InvariantCulture), "-i", _url, "-vn", "-f", "s16le", "-acodec", "pcm_s16le", "-ac", "2", "-ar", "48000", "pipe:1" }) start.ArgumentList.Add(argument);
+        foreach (var argument in new[] { "-hide_banner", "-loglevel", "error", "-nostdin", "-threads", "1", "-analyzeduration", "0", "-probesize", "32768", "-rw_timeout", "10000000", "-ss", seconds.ToString(CultureInfo.InvariantCulture), "-i", _url, "-vn", "-f", "s16le", "-acodec", "pcm_s16le", "-ac", "2", "-ar", "48000", "pipe:1" }) start.ArgumentList.Add(argument);
         var process = new Process { StartInfo = start };
         if (!process.Start()) throw new IOException("Não foi possível iniciar FFmpeg.");
         _process = process; _decode = new CancellationTokenSource();

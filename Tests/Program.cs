@@ -82,7 +82,7 @@ await PlaybackChecks.RecommendationRaceChecksAsync();
 await PlaybackChecks.DisablePrefetchedAutoplayAsync();
 await PlaybackChecks.ContinueAfterEndAsync();
 await LibraryChecks.RunAsync();
-if (args.Contains("--native")) await NativeAudioChecks.RunAsync();
+if (args.Contains("--native")) { await NativeAudioChecks.RunAsync(); await NativeRetryChecks.RunAsync(); }
 if (args.Contains("--soundcloud"))
 {
     using var publicSoundCloud = new SoundCloudWebService();

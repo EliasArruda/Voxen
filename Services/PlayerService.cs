@@ -8,6 +8,8 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     private DotNetObjectReference<PlayerService>? _reference;
     private CancellationTokenSource? _resolution;
     private long _version;
+    private bool _retryAvailable;
+    private long _startupStarted;
     private readonly TimeProvider _clock = clock ?? TimeProvider.System;
     private readonly TimeSpan _startupTimeout = startupTimeout ?? TimeSpan.FromSeconds(20);
     private CancellationTokenSource? _startup;
@@ -41,18 +43,23 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         await _module.InvokeVoidAsync("initialize", _reference, Volume);
         Changed?.Invoke();
     }
-    public async Task PlayAsync(Track track)
+    public Task PlayAsync(Track track) => PlayCoreAsync(track, false);
+    private async Task PlayCoreAsync(Track track, bool retry)
     {
         if (!Ready) return;
+        _retryAvailable = !retry;
+        if (!retry) _startupStarted = _clock.GetTimestamp();
+        var budget = _startupTimeout - _clock.GetElapsedTime(_startupStarted);
+        if (budget <= TimeSpan.Zero) budget = TimeSpan.FromMilliseconds(1);
         var version = ++_version;
         _resolution?.Cancel();
         CancelStartup(); _startup = new CancellationTokenSource();
-        var resolution = new CancellationTokenSource(_startupTimeout, _clock);
+        var resolution = new CancellationTokenSource(budget, _clock);
         _resolution = resolution;
         LoadingMessage = "Conectando à fonte…";
         IsSeeking = false; CurrentTrack = track; Status = PlaybackStatus.Loading; Error = null; Position = Duration = 0;
         Changed?.Invoke();
-        _ = WatchStartupAsync(version, _startup.Token);
+        _ = WatchStartupAsync(version, budget, _startup.Token);
         try
         {
             if (native is not null) await native.StopAsync(version); else await _module!.InvokeVoidAsync("stop", version);
@@ -62,17 +69,17 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
             LoadingMessage = "Iniciando áudio…"; Changed?.Invoke();
             var url = await proxy.PublishAsync(resource, version, resolution.Token);
             if (version != _version) return;
-            if (native is not null) await native.LoadAsync(url, version, track.Duration?.TotalSeconds ?? 0);
+            if (native is not null) await native.LoadAsync(resource.NativeInputUrl ?? url, version, track.Duration?.TotalSeconds ?? 0);
             else await _module!.InvokeVoidAsync("load", url, version, resource.IsHls);
         }
         catch (OperationCanceledException) when (version != _version) { }
         catch (Exception) when (version != _version) { }
-        catch (Exception) when (version == _version)
+        catch (Exception exception) when (version == _version)
         {
             CancelStartup();
             if (provider is AudioPreparationService preparation) preparation.Invalidate(track);
             Status = PlaybackStatus.Error;
-            Error = "Não foi possível reproduzir esta faixa. Tente novamente ou escolha outra.";
+            Error = PlaybackErrors.Describe(exception, track.Source);
             Changed?.Invoke();
         }
         finally { if (_resolution == resolution) _resolution = null; resolution.Dispose(); }
@@ -114,6 +121,14 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     public async Task OnAudioEvent(long version, string type, double position, double duration)
     {
         if (version != _version) return;
+        if (type == "error" && native is not null && Status == PlaybackStatus.Loading && _retryAvailable && CurrentTrack is { } retryTrack)
+        {
+            _retryAvailable = false;
+            if (provider is AudioPreparationService cached) cached.Invalidate(retryTrack);
+            await PlayCoreAsync(retryTrack, true);
+            return;
+        }
+        if (type == "playing") _retryAvailable = false;
         if (type is "playing" or "pause" or "error" or "ended") CancelStartup();
         if (type is "seeked" or "error" or "ended") IsSeeking = false;
         Position = double.IsFinite(position) ? Math.Max(0, position) : 0;
@@ -122,16 +137,16 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
             "ended" => PlaybackStatus.Ended, "error" => PlaybackStatus.Error, _ => Status };
         if (type == "playing") Error = null;
         if (type == "error" && CurrentTrack is { } failed && provider is AudioPreparationService preparation) preparation.Invalidate(failed);
-        if (type == "error") Error = "O áudio não iniciou. Verifique a conexão e os codecs do sistema, ou tente outra faixa.";
+        if (type == "error") Error = "A fonte interrompeu o áudio. Tente novamente para obter um novo endereço de reprodução.";
         Changed?.Invoke();
         if (type == "ended" && Ended is { } ended) await ended();
     }
     private void CancelStartup() { _startup?.Cancel(); _startup?.Dispose(); _startup = null; }
-    private async Task WatchStartupAsync(long version, CancellationToken token)
+    private async Task WatchStartupAsync(long version, TimeSpan budget, CancellationToken token)
     {
         try
         {
-            await Task.Delay(_startupTimeout, _clock, token);
+            await Task.Delay(budget, _clock, token);
             async Task Expire()
             {
                 if (version != _version || Status != PlaybackStatus.Loading) return;
