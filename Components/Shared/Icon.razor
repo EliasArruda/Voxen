@@ -1,0 +1,33 @@
+<svg class="icon @Class" width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    @((MarkupString)Shape)
+</svg>
+@code {
+    [Parameter] public string Name { get; set; } = "music";
+    [Parameter] public int Size { get; set; } = 20;
+    [Parameter] public string? Class { get; set; }
+    private string Shape => Name switch
+    {
+        "search" => "<circle cx='10.5' cy='10.5' r='6.5'/><path d='m16 16 4.5 4.5'/>",
+        "home" => "<path d='m3 10 9-7 9 7v10H15v-7H9v7H3z'/>",
+        "wave" => "<path d='M4 10v4m4-8v12m4-15v18m4-15v12m4-8v4'/>",
+        "library" => "<path d='M4 4v16M8 4v16m4-16v16m5-15 4 14'/>",
+        "queue" => "<path d='M3 6h14M3 11h14M3 16h8m5-1 5 3-5 3z'/>",
+        "music" => "<path d='M9 18V5l11-2v13M9 9l11-2'/><ellipse cx='6' cy='18' rx='3' ry='2'/><ellipse cx='17' cy='16' rx='3' ry='2'/>",
+        "youtube" => "<rect x='2' y='5' width='20' height='14' rx='4'/><path d='m10 9 5 3-5 3z'/>",
+        "cloud" => "<path d='M6 17H4m2-7v9m3-11v11m3-9v9m3-3h5a3 3 0 0 0 0-6 5 5 0 0 0-5-5'/>",
+        "arrow" => "<path d='M5 12h14m-5-5 5 5-5 5'/>",
+        "pause" => "<path d='M8 5v14m8-14v14' stroke-width='4'/>",
+        "stop" => "<rect x='6' y='6' width='12' height='12' rx='2' fill='currentColor' stroke='none'/>",
+        "plus" => "<path d='M12 5v14M5 12h14'/>",
+        "play" => "<path d='m8 4 13 8-13 8z' fill='currentColor' stroke='none'/>",
+        "previous" => "<path d='M5 5v14m14-14L8 12l11 7z'/>",
+        "next" => "<path d='M19 5v14M5 5l11 7L5 19z'/>",
+        "shuffle" => "<path d='M3 5c8 0 6 14 14 14h4m-4-4 4 4-4 4M3 19c3 0 5-2 6-5m4-4c2-4 3-5 8-5m-4-4 4 4-4 4'/>",
+        "repeat" => "<path d='m17 2 4 4-4 4M3 10V8a2 2 0 0 1 2-2h16M7 22l-4-4 4-4m14 0v2a2 2 0 0 1-2 2H3'/>",
+        "volume" => "<path d='M4 9h4l5-4v14l-5-4H4zm12-1a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14'/>",
+        "close" => "<path d='m6 6 12 12M6 18 18 6'/>",
+        "clock" => "<circle cx='12' cy='12' r='9'/><path d='M12 7v5l3 2'/>",
+        "headphones" => "<path d='M3 14v-2a9 9 0 0 1 18 0v2'/><rect x='3' y='12' width='4' height='8' rx='2'/><rect x='17' y='12' width='4' height='8' rx='2'/>",
+        _ => "<circle cx='12' cy='12' r='9'/><path d='M12 8v5m0 3h.01'/>"
+    };
+}

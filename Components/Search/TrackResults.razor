@@ -1,0 +1,33 @@
+@inject PlaybackCoordinator Playback
+@inject PlayerService Player
+<div class="track-table">
+    <div class="track-header" aria-hidden="true"><span>#</span><span></span><span>Título</span><span>Artista / canal</span><span>Fonte</span><span><Icon Name="clock" Size="15" /></span><span></span></div>
+    <ol class="track-list" aria-label="Resultados do YouTube">
+        @for (var i = 0; i < Tracks.Count; i++)
+        {
+            var track = Tracks[i];
+            <li class="track-row" @key="track.Id">
+                <button class="row-play icon-button" disabled="@(!Player.Ready)" aria-label="Reproduzir @track.Title" @onclick="() => Playback.PlayTrackAsync(track)"><Icon Name="play" Size="14" /></button>
+                <div class="track-art" aria-hidden="true">
+                    @if (!string.IsNullOrWhiteSpace(track.ThumbnailUrl))
+                    { <img src="@track.ThumbnailUrl" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" /> }
+                    else { <Icon Name="music" Size="18" /> }
+                </div>
+                <div class="track-info"><h3 title="@track.Title">@track.Title</h3><p>@track.Artist</p></div>
+                <span class="track-artist" title="@track.Artist">@track.Artist</span>
+                <span class="source-badge @(track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(track.Source == TrackSource.SoundCloud ? "cloud" : "youtube")" Size="13" />@track.Source</span>
+                <span class="track-duration" aria-label="Duração">@FormatDuration(track.Duration)</span>
+                <button class="row-add icon-button" aria-label="Adicionar @track.Title à fila" @onclick="() => Playback.Add(track)"><Icon Name="plus" Size="17" /></button>
+            </li>
+        }
+    </ol>
+</div>
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<Track> Tracks { get; set; } = Array.Empty<Track>();
+    private static string FormatDuration(TimeSpan? duration) => duration switch
+    {
+        null => "—",
+        { TotalHours: >= 1 } value => $"{(int)value.TotalHours}:{value.Minutes:00}:{value.Seconds:00}",
+        { } value => $"{(int)value.TotalMinutes}:{value.Seconds:00}"
+    };
+}

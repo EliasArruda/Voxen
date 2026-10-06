@@ -1,0 +1,24 @@
+@implements IDisposable
+@inject QueueService Queue
+@inject PlayerService Player
+@inject PlaybackCoordinator Playback
+<div class="inspector-art">@if (Player.CurrentTrack is { ThumbnailUrl.Length: > 0 } track) { <img src="@track.ThumbnailUrl" alt="" referrerpolicy="no-referrer" /> } else { <Icon Name="music" Size="46" /> }</div>
+<div class="inspector-copy"><h3>@(Player.CurrentTrack?.Title ?? "O que vamos ouvir?")</h3><p>@(Player.CurrentTrack?.Artist ?? "Encontre uma faixa e aperte play.")</p></div>
+<div class="queue-heading"><Icon Name="queue" Size="17" /><h2>Sua fila</h2><span>@Queue.Entries.Count</span><button class="icon-button" aria-label="Limpar fila" disabled="@(Queue.Entries.Count == 0)" @onclick="Playback.ClearAsync"><Icon Name="close" Size="14" /></button></div>
+@if (Queue.Entries.Count == 0) { <div class="queue-empty"><p>Um espaço para seus próximos sons.</p><small>Use + nos resultados para montar sua fila.</small></div> }
+else
+{
+    <ol class="queue-list" aria-label="Faixas na fila">
+    @foreach (var entry in Queue.Entries)
+    {
+        <li class="@(Queue.CurrentKey == entry.Key ? "current" : "")" @key="entry.Key"><button class="queue-track" disabled="@(!Player.Ready)" aria-label="Reproduzir @entry.Track.Title na fila" @onclick="() => Playback.PlayEntryAsync(entry.Key)"><Icon Name="@(Queue.CurrentKey == entry.Key ? "wave" : "music")" Size="16" /><span><strong>@entry.Track.Title</strong><small>@entry.Track.Artist</small></span></button><button class="icon-button" aria-label="Remover @entry.Track.Title da fila" @onclick="() => Playback.RemoveAsync(entry.Key)"><Icon Name="close" Size="14" /></button></li>
+    }
+    </ol>
+}
+<div class="autoplay-setting"><div><strong>Continuar descobrindo</strong><small>Recomendações ao terminar a fila</small></div><button class="toggle-switch" aria-label="Reprodução automática" aria-pressed="@Playback.Autoplay" @onclick="Playback.ToggleAutoplay"><span></span></button></div>
+@if (Playback.Notice is not null) { <p class="queue-notice" role="status">@Playback.Notice</p> }
+@code {
+    protected override void OnInitialized() { Queue.Changed += Refresh; Player.Changed += Refresh; Playback.Changed += Refresh; }
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() { Queue.Changed -= Refresh; Player.Changed -= Refresh; Playback.Changed -= Refresh; }
+}
