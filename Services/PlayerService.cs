@@ -2,12 +2,13 @@ using Microsoft.JSInterop;
 using Voxen.Models;
 namespace Voxen.Services;
 public enum PlaybackStatus { Idle, Loading, Playing, Paused, Ended, Error }
-public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy proxy, NativeAudioService? native = null, TimeSpan? startupTimeout = null) : IAsyncDisposable
+public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy proxy, NativeAudioService? native = null, TimeSpan? startupTimeout = null, TimeProvider? clock = null) : IAsyncDisposable
 {
     private IJSObjectReference? _module;
     private DotNetObjectReference<PlayerService>? _reference;
     private CancellationTokenSource? _resolution;
     private long _version;
+    private readonly TimeProvider _clock = clock ?? TimeProvider.System;
     private readonly TimeSpan _startupTimeout = startupTimeout ?? TimeSpan.FromSeconds(20);
     private CancellationTokenSource? _startup;
     private Func<Func<Task>, Task>? _dispatch;
@@ -46,7 +47,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         var version = ++_version;
         _resolution?.Cancel();
         CancelStartup(); _startup = new CancellationTokenSource();
-        var resolution = new CancellationTokenSource(_startupTimeout);
+        var resolution = new CancellationTokenSource(_startupTimeout, _clock);
         _resolution = resolution;
         LoadingMessage = "Conectando à fonte…";
         IsSeeking = false; CurrentTrack = track; Status = PlaybackStatus.Loading; Error = null; Position = Duration = 0;
@@ -130,7 +131,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     {
         try
         {
-            await Task.Delay(_startupTimeout, token);
+            await Task.Delay(_startupTimeout, _clock, token);
             async Task Expire()
             {
                 if (version != _version || Status != PlaybackStatus.Loading) return;

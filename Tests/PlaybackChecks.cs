@@ -126,17 +126,21 @@ internal static class PlaybackChecks
     {
         var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream()));
         await using var proxy = new AudioProxy();
-        await using var player = new PlayerService(new TestAudio(resource), proxy, startupTimeout: TimeSpan.FromMilliseconds(120));
+        var clock = new ManualTime();
+        await using var player = new PlayerService(new TestAudio(resource), proxy, clock: clock);
         var js = new TestJS(); await player.InitializeAsync(js);
         await player.PlayAsync(Track("stalled"));
         var old = js.Module.Version;
-        await Task.Delay(220);
+        clock.Advance(TimeSpan.FromSeconds(21));
+        var deadline = DateTime.UtcNow.AddSeconds(3);
+        while (player.Status != PlaybackStatus.Error || js.Module.Stops < 2) { if (DateTime.UtcNow > deadline) throw new Exception("Startup deadline did not expire"); await Task.Delay(10); }
         Check(player.Status == PlaybackStatus.Error && js.Module.Stops >= 2, "End-to-end startup deadline stops backend after metadata resolves but audio stalls");
         await player.OnAudioEvent(old, "playing", 1, 10);
         Check(player.Status == PlaybackStatus.Error, "Late audio after startup expiry cannot revive failed load");
         await player.ToggleAsync();
         await player.OnAudioEvent(js.Module.Version, "playing", 1, 10);
-        await Task.Delay(220);
+        clock.Advance(TimeSpan.FromSeconds(21));
+        await Task.Yield();
         Check(player.Status == PlaybackStatus.Playing, "Successful playback cancels startup deadline");
     }
     sealed class DelayedRecommendation : ITrackSearchProvider
