@@ -18,6 +18,7 @@ public sealed class SearchSession(ITrackSearchProvider provider, ILogger<SearchS
     public IReadOnlyList<Track> Results { get; private set; } = Array.Empty<Track>();
     public SearchStatus Status { get; private set; }
     public string? ErrorMessage { get; private set; }
+    public string? Notice { get; private set; }
 
     public async Task UpdateAsync(string input, bool retry = false)
     {
@@ -28,7 +29,7 @@ public sealed class SearchSession(ITrackSearchProvider provider, ILogger<SearchS
         _pending?.Cancel();
         var version = ++_version;
         Query = query;
-        ErrorMessage = null;
+        ErrorMessage = null; Notice = null;
         Results = Array.Empty<Track>();
         if (query.Length < 2)
         {
@@ -49,11 +50,23 @@ public sealed class SearchSession(ITrackSearchProvider provider, ILogger<SearchS
             Status = SearchStatus.Loading;
             Changed?.Invoke();
             request.CancelAfter(TimeSpan.FromSeconds(20));
-            var results = await provider.SearchAsync(query, request.Token);
-            if (!IsCurrent(version)) return;
-            request.Token.ThrowIfCancellationRequested();
-            Results = results;
-            Status = SearchStatus.Ready;
+            if (provider is IStreamingTrackSearchProvider streaming)
+            {
+                await foreach (var snapshot in streaming.SearchSnapshotsAsync(query, request.Token))
+                {
+                    if (!IsCurrent(version)) return;
+                    Results = snapshot.Tracks; Notice = snapshot.Notice;
+                    Status = snapshot.Complete ? SearchStatus.Ready : SearchStatus.Loading;
+                    Changed?.Invoke();
+                }
+            }
+            else
+            {
+                var results = await provider.SearchAsync(query, request.Token);
+                if (!IsCurrent(version)) return;
+                request.Token.ThrowIfCancellationRequested();
+                Results = results; Status = SearchStatus.Ready;
+            }
         }
         catch (OperationCanceledException) when (request.IsCancellationRequested)
         {
@@ -64,9 +77,9 @@ public sealed class SearchSession(ITrackSearchProvider provider, ILogger<SearchS
         catch (Exception exception)
         {
             if (!IsCurrent(version)) return;
-            logger.LogWarning(exception, "YouTube search failed");
+            logger.LogWarning(exception, "Music search failed");
             Status = SearchStatus.Error;
-            ErrorMessage = "Não foi possível pesquisar no YouTube. Verifique sua conexão e tente novamente.";
+            ErrorMessage = "Não foi possível pesquisar nas fontes selecionadas. Verifique sua conexão e tente novamente.";
         }
         finally
         {
@@ -86,7 +99,7 @@ public sealed class SearchSession(ITrackSearchProvider provider, ILogger<SearchS
         _pending = null;
         Results = Array.Empty<Track>();
         Query = string.Empty;
-        ErrorMessage = null;
+        ErrorMessage = null; Notice = null;
         Changed = null;
     }
 }

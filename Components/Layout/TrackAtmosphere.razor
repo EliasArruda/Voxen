@@ -1,0 +1,24 @@
+@implements IDisposable
+@inject PlayerService Player
+<div class="track-atmosphere @(_ready ? "is-ready" : "")" aria-hidden="true">
+    @if (_previous is not null) { <img class="atmosphere-previous" src="@_previous" alt="" referrerpolicy="no-referrer" /> }
+    @if (_current is not null) { var image = _current; <img @key="image" class="atmosphere-current @(_ready ? "is-ready" : "")" src="@image" alt="" referrerpolicy="no-referrer" @onload="() => Loaded(image)" @onerror="() => Failed(image)" /> }
+</div>
+@code {
+    private string? _current, _previous;
+    private bool _ready, _disposed;
+    protected override void OnInitialized() { Player.Changed += Changed; Update(); }
+    private bool Update()
+    {
+        var image = Player.CurrentTrack?.ThumbnailUrl;
+        if (!Uri.TryCreate(image, UriKind.Absolute, out var uri) || uri.Scheme != "https") image = null;
+        if (image == _current) return false;
+        _previous = _ready ? _current : _previous; _current = image; _ready = false;
+        if (_current is null) _previous = null;
+        return true;
+    }
+    private void Changed() { if (!_disposed) _ = InvokeAsync(() => { if (Update()) StateHasChanged(); }); }
+    private void Loaded(string? image) { if (image == _current) _ready = true; }
+    private void Failed(string? image) { if (image == _current) { _previous = null; _ready = false; } }
+    public void Dispose() { _disposed = true; Player.Changed -= Changed; }
+}
