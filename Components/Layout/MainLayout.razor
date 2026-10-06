@@ -9,19 +9,19 @@
             <span class="brand-text">Voxen<small>STUDIO</small></span>
         </a>
         <nav aria-label="Navegação principal">
-            <NavLink href="/" Match="NavLinkMatch.All" title="Início"><Icon Name="home" /><span>Início</span></NavLink>
-            <NavLink href="/search" title="Buscar"><Icon Name="search" /><span>Buscar</span></NavLink>
-            <NavLink href="/library" title="Biblioteca"><Icon Name="library" /><span>Biblioteca</span></NavLink>
+            <NavLink href="/" Match="NavLinkMatch.All" title="Início" aria-label="Início"><Icon Name="home" /><span>Início</span></NavLink>
+            <NavLink href="/search" title="Buscar" aria-label="Buscar"><Icon Name="search" /><span>Buscar</span></NavLink>
+            <NavLink href="/library" title="Biblioteca" aria-label="Biblioteca"><Icon Name="library" /><span>Biblioteca</span></NavLink>
         </nav>
-        <div class="library-section">
-            <div class="sidebar-heading"><Icon Name="library" Size="16" /><span>Sua biblioteca</span></div>
-            <p>Salve faixas, favorite seus sons e crie playlists. Tudo fica neste computador.</p>
-            <a class="library-link" href="/library">Abrir biblioteca</a>
+        <div class="library-section" aria-label="Atalhos da biblioteca">
+            <a class="library-shortcut" href="/library?view=favorites" title="Músicas favoritas" aria-label="Abrir músicas favoritas"><Icon Name="heart" Size="22" /></a>
+            <a class="library-shortcut" href="/library#playlists-title" title="Suas playlists" aria-label="Abrir suas playlists"><Icon Name="music" Size="22" /></a>
         </div>
-        <div class="sidebar-note"><span class="source-dot"></span><span>YouTube disponível<small>Descubra seu próximo som.</small></span></div>
+        <div class="sidebar-note" title="YouTube e SoundCloud disponíveis"><span class="source-dot"></span><span class="sr-only">YouTube e SoundCloud disponíveis</span></div>
     </aside>
     <header class="topbar">
-        <span class="workspace-title"><Icon Name="headphones" Size="17" /><span>Seu espaço para música</span></span>
+        <a class="workspace-title" href="/" aria-label="Voxen, início">Voxen</a>
+        <a class="global-search" href="/search"><Icon Name="search" Size="19" /><span>O que você quer ouvir?</span><kbd>Ctrl K</kbd></a>
         <div class="topbar-actions"><KeyboardShortcuts QueueToggle="ToggleInspector" DismissPanels="CloseInspector" /><span class="connection-status"><span class="source-dot"></span>Áudio nativo</span>
             <button class="icon-button inspector-toggle" aria-label="Mostrar fila" aria-controls="queue-panel" aria-expanded="@(_showInspector ? "true" : "false")" @onclick="ToggleInspector"><Icon Name="queue" /></button>
         </div>

@@ -54,6 +54,14 @@
     { <div class="empty-state"><span class="empty-symbol"><Icon Name="library" Size="30" /></span><h3>@EmptyTitle</h3><p>@EmptyText</p><a class="secondary-button" href="/search">Buscar músicas</a></div> }
 </section>
 @code {
+    [SupplyParameterFromQuery(Name = "view")] public string? InitialView { get; set; }
+    private string? _previousView;
+    protected override void OnParametersSet()
+    {
+        if (InitialView == _previousView) return;
+        _previousView = InitialView;
+        if (InitialView is "saved" or "favorites" or "history") SelectView(InitialView);
+    }
     private string _view = "saved", _name = "", _rename = "", _targetPlaylist = "";
     private Guid? _selected;
     private string? _notice;
