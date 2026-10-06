@@ -83,8 +83,9 @@ internal static class NativeRetryChecks
             var call = Interlocked.Increment(ref Calls);
             if (call == 1) FirstPrepared?.Invoke();
             if (call == 2 && PendingRetry is { } pending) await pending; // Ignore cancellation to exercise stale-result protection.
-            return new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(bytes)),
-                NativeInputUrl: call == 1 || !recover ? "http://127.0.0.1:1/expired" : null);
+            return new AudioResource("audio/wav", _ => call == 1 || !recover
+                ? Task.FromException<Stream>(new HttpRequestException("Expired test stream"))
+                : Task.FromResult<Stream>(new MemoryStream(bytes)));
         }
     }
     private sealed class NoBrowser : IJSRuntime
