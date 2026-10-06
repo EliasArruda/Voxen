@@ -21,3 +21,7 @@ outputs/
 
 .runtime/
 artifacts/
+
+# Python helper caches
+__pycache__/
+*.pyc
