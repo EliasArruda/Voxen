@@ -54,12 +54,67 @@ internal static class PlaybackChecks
         audio.Fail = true; await player.PlayAsync(Track("broken"));
         Check(player.Status == PlaybackStatus.Error && player.Error is not null, "Audio resolution failure exposes retry state");
         audio.Fail = false; await player.ToggleAsync(); Check(player.Status == PlaybackStatus.Loading && player.Error is null, "Retry clears prior audio error");
+        await player.OnAudioEvent(js.Module.Version, "error", 0, 12);
+        await player.OnAudioEvent(js.Module.Version, "playing", 1, 12);
+        Check(player.Status == PlaybackStatus.Playing && player.Error is null, "Late successful playback clears an earlier audio error");
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        js.Module.StopGate = gate;
+        var stopping = player.StopAsync();
+        js.Module.StopGate = null;
+        await player.PlayAsync(Track("after-stop"));
+        gate.SetResult(); await stopping;
+        Check(player.CurrentTrack?.Id == "after-stop" && player.Status == PlaybackStatus.Loading, "Late stop cannot clear the newest playback state");
         var release = new TaskCompletionSource<AudioResource>(TaskCreationOptions.RunContinuationsAsynchronously);
         audio.Pending = release;
         var pending = player.PlayAsync(Track("stale"));
         audio.Pending = null; await player.PlayAsync(Track("new"));
         release.SetResult(resource); await pending;
         Check(player.CurrentTrack?.Id == "new" && player.Status == PlaybackStatus.Loading, "Cancelled audio resolution cannot replace newest track");
+    }
+    public static async Task RecommendationRaceChecksAsync()
+    {
+        foreach (var stop in new[] { true, false })
+        {
+            var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(new byte[10])));
+            await using var proxy = new AudioProxy();
+            await using var player = new PlayerService(new TestAudio(resource), proxy);
+            var js = new TestJS(); await player.InitializeAsync(js);
+            var queue = new QueueService();
+            var delayed = new DelayedRecommendation();
+            using var coordinator = new PlaybackCoordinator(queue, player, new RecommendationService(delayed));
+            await coordinator.PlayTrackAsync(Track("original")); coordinator.ToggleAutoplay();
+            await player.OnAudioEvent(js.Module.Version, "playing", 90, 100);
+            await delayed.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            Check(player.Status == PlaybackStatus.Playing, "Autoplay prefetch starts before last track ends");
+            var ending = player.OnAudioEvent(js.Module.Version, "ended", 100, 100);
+            if (stop) await coordinator.StopAsync(); else coordinator.Add(Track("manual"));
+            delayed.Release.SetResult([Track("recommended")]); await ending;
+            if (stop) Check(player.CurrentTrack is null && queue.Entries.Count == 1, "Stop cancels pending recommendation and prevents autoplay restart");
+            else Check(player.CurrentTrack?.Id == "manual" && queue.Entries.Count == 2, "Manual queue addition wins over late recommendation");
+        }
+    }
+    public static async Task DisablePrefetchedAutoplayAsync()
+    {
+        var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(new byte[10])));
+        await using var proxy = new AudioProxy();
+        await using var player = new PlayerService(new TestAudio(resource), proxy);
+        var js = new TestJS(); await player.InitializeAsync(js);
+        var queue = new QueueService();
+        using var coordinator = new PlaybackCoordinator(queue, player, new RecommendationService(new RecommendationProvider()));
+        await coordinator.PlayTrackAsync(Track("one")); coordinator.ToggleAutoplay();
+        await player.OnAudioEvent(js.Module.Version, "playing", 90, 100);
+        Check(coordinator.Notice == "Próxima recomendação pronta." && queue.Entries.Count == 1, "Prefetch keeps recommendation outside manual queue until needed");
+        coordinator.ToggleAutoplay();
+        await player.OnAudioEvent(js.Module.Version, "ended", 100, 100);
+        Check(player.CurrentTrack?.Id == "one" && player.Status == PlaybackStatus.Ended && queue.Entries.Count == 1,
+            "Disabling autoplay discards completed prefetch before track end");
+    }
+    sealed class DelayedRecommendation : ITrackSearchProvider
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<IReadOnlyList<Track>> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public Task<IReadOnlyList<Track>> SearchAsync(string query, CancellationToken cancellationToken = default)
+        { Started.TrySetResult(); return Release.Task; }
     }
     sealed class TestAudio(AudioResource resource) : IAudioSourceProvider
     {
@@ -79,12 +134,15 @@ internal static class PlaybackChecks
     sealed class TestModule : IJSObjectReference
     {
         public long Version;
+        public TaskCompletionSource? StopGate;
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
+            if (identifier == "stop" && StopGate is { } gate) return new ValueTask<TValue>(WaitForStop<TValue>(gate.Task));
             if (identifier == "load") Version = (long)args![1]!;
             return ValueTask.FromResult(default(TValue)!);
         }
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object?[]? args) => InvokeAsync<TValue>(identifier, args);
+        private static async Task<T> WaitForStop<T>(Task gate) { await gate; return default!; }
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

@@ -73,6 +73,10 @@ if (args.Contains("--youtube"))
     Check(tracks.All(t => t.Id.Length > 0 && t.Title.Length > 0 && t.Artist.Length > 0 && t.Url.StartsWith("https://")), "Live search maps required metadata");
 }
 await PlaybackChecks.RunAsync();
+await SoundCloudChecks.RunAsync();
+await PlaybackChecks.RecommendationRaceChecksAsync();
+await PlaybackChecks.DisablePrefetchedAutoplayAsync();
+if (args.Contains("--native")) await NativeAudioChecks.RunAsync();
 Console.WriteLine("All checks passed.");
 
 sealed class FakeProvider(Func<string, CancellationToken, Task<IReadOnlyList<Track>>>? handler = null) : ITrackSearchProvider

@@ -6,12 +6,15 @@ public sealed class PlaybackCoordinator : IDisposable
     private readonly PlayerService _player;
     private readonly RecommendationService _recommendations;
     private CancellationTokenSource? _recommendation;
+    private Task? _prefetch;
+    private Guid? _requestedFor;
+    private Track? _candidate;
     public bool Autoplay { get; private set; }
     public string? Notice { get; private set; }
     public event Action? Changed;
     public PlaybackCoordinator(QueueService queue, PlayerService player, RecommendationService recommendations)
-    { _queue = queue; _player = player; _recommendations = recommendations; player.Ended += AdvanceAsync; }
-    private void CancelRecommendation() { _recommendation?.Cancel(); Notice = null; }
+    { _queue = queue; _player = player; _recommendations = recommendations; player.Ended += AdvanceAsync; player.Changed += PrefetchWhenNeeded; }
+    private void CancelRecommendation() { _recommendation?.Cancel(); _prefetch = null; _requestedFor = null; _candidate = null; Notice = null; }
     public Task PlayTrackAsync(Track track)
     {
         CancelRecommendation();
@@ -37,25 +40,47 @@ public sealed class PlaybackCoordinator : IDisposable
         if (_queue.CurrentKey == key) await _player.StopAsync();
         _queue.Remove(key);
     }
+    public async Task StopAsync() { CancelRecommendation(); await _player.StopAsync(); Changed?.Invoke(); }
     public async Task ClearAsync() { CancelRecommendation(); await _player.StopAsync(); _queue.Clear(); }
-    public void ToggleAutoplay() { Autoplay = !Autoplay; if (!Autoplay) CancelRecommendation(); Changed?.Invoke(); }
+    public void ToggleAutoplay() { Autoplay = !Autoplay; if (!Autoplay) CancelRecommendation(); else PrefetchWhenNeeded(); Changed?.Invoke(); }
+    private void PrefetchWhenNeeded()
+    {
+        if (!Autoplay || _player.Status != PlaybackStatus.Playing || _player.Duration <= 0
+            || _player.Duration - _player.Position > 15 || _queue.Next is not null
+            || _queue.CurrentKey is not { } key || _requestedFor == key || _queue.Entries.Count >= 200) return;
+        _requestedFor = key;
+        _prefetch = RequestRecommendationAsync();
+    }
     private async Task AdvanceAsync()
     {
         if (_queue.Next is { } next) { await PlayEntryAsync(next.Key); return; }
-        if (!Autoplay || _player.CurrentTrack is not { } track || _queue.Entries.Count >= 200) return;
+        if (!Autoplay || _player.CurrentTrack is null || _queue.Entries.Count >= 200) return;
+        var key = _queue.CurrentKey;
+        if (_prefetch is { } pending) await pending;
+        else if (_requestedFor != key || key is null) { _requestedFor = key; await RequestRecommendationAsync(); }
+        // Manual additions win over any recommendation fetched while the queue was empty.
+        if (!Autoplay || _player.Status != PlaybackStatus.Ended || _queue.CurrentKey != key) return;
+        if (_queue.Next is { } entry) await PlayEntryAsync(entry.Key);
+        else if (_candidate is { } candidate) await PlayEntryAsync(_queue.Add(candidate).Key);
+    }
+    private async Task RequestRecommendationAsync()
+    {
+        if (_player.CurrentTrack is not { } track) return;
+        var key = _queue.CurrentKey;
         var request = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         _recommendation = request; Notice = "Encontrando o próximo som…"; Changed?.Invoke();
         try
         {
             var recommendation = await _recommendations.FindNextAsync(track, _queue.Entries, request.Token);
             request.Token.ThrowIfCancellationRequested();
-            _recommendation = null;
-            if (recommendation is not null) await PlayTrackAsync(recommendation);
-            else { Notice = "Nenhuma nova recomendação disponível."; Changed?.Invoke(); }
+            if (!Autoplay || _queue.CurrentKey != key || _queue.Next is not null) return;
+            if (recommendation is not null) { _candidate = recommendation; Notice = "Próxima recomendação pronta."; }
+            else Notice = "Nenhuma nova recomendação disponível.";
+            Changed?.Invoke();
         }
         catch (OperationCanceledException) { }
-        catch (Exception) { Notice = "Não foi possível buscar recomendações. Sua fila continua disponível."; Changed?.Invoke(); }
+        catch (Exception) { if (!request.IsCancellationRequested) { Notice = "Não foi possível buscar recomendações. Sua fila continua disponível."; Changed?.Invoke(); } }
         finally { if (_recommendation == request) _recommendation = null; request.Dispose(); }
     }
-    public void Dispose() { CancelRecommendation(); _player.Ended -= AdvanceAsync; }
+    public void Dispose() { CancelRecommendation(); _player.Ended -= AdvanceAsync; _player.Changed -= PrefetchWhenNeeded; }
 }

@@ -5,6 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +16,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="PhotinoX.Blazor" Version="5.3.3" />
+    <PackageReference Include="ppy.SDL3-CS" Version="2026.1002.1" />
     <PackageReference Include="YoutubeExplode" Version="6.6.2" />
   </ItemGroup>
 

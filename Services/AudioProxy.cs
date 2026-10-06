@@ -34,6 +34,7 @@ public sealed class AudioProxy : IAsyncDisposable
                     {
                         var stream = await current.OpenAsync(context.RequestAborted);
                         context.Response.Headers.CacheControl = "no-store";
+                        context.Response.Headers.AccessControlAllowOrigin = "*";
                         return Results.Stream(stream, current.ContentType, enableRangeProcessing: stream.CanSeek);
                     }
                     catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested) { return Results.StatusCode(499); }
