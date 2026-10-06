@@ -3,8 +3,17 @@ using YoutubeExplode;
 
 namespace Voxen.Services;
 
-public sealed class YouTubeService(YoutubeClient client) : ITrackSearchProvider
+public sealed class YouTubeService(YoutubeClient client) : ITrackSearchProvider, IAudioSourceProvider
 {
+    public async Task<AudioResource> ResolveAsync(Track track, CancellationToken cancellationToken)
+    {
+        if (track.Source != TrackSource.YouTube) throw new NotSupportedException("SoundCloud ainda requer credenciais e integração de áudio.");
+        var manifest = await client.Videos.Streams.GetManifestAsync(track.Id, cancellationToken);
+        var stream = manifest.GetAudioOnlyStreams().Where(item => item.Container == YoutubeExplode.Videos.Streams.Container.Mp4)
+            .OrderByDescending(item => item.Bitrate).FirstOrDefault()
+            ?? throw new InvalidOperationException("Esta faixa não oferece áudio AAC compatível.");
+        return new AudioResource("audio/mp4", async token => await client.Videos.Streams.GetAsync(stream, token));
+    }
     public const int ResultLimit = 20;
 
     public async Task<IReadOnlyList<Track>> SearchAsync(

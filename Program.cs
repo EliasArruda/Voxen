@@ -12,6 +12,13 @@ builder.Services.AddSingleton<ITrackSearchProvider>(services => services.GetRequ
 builder.Services.AddSingleton<Func<SearchSession>>(services =>
     () => ActivatorUtilities.CreateInstance<SearchSession>(services));
 
+builder.Services.AddSingleton<IAudioSourceProvider>(services => services.GetRequiredService<YouTubeService>());
+builder.Services.AddSingleton<AudioProxy>();
+builder.Services.AddSingleton<PlayerService>();
+builder.Services.AddSingleton<QueueService>();
+builder.Services.AddSingleton<RecommendationService>();
+builder.Services.AddSingleton<PlaybackCoordinator>();
+
 builder.RootComponents.Add<Routes>("#app");
 
 builder.ConfigureMainWindow(window =>
