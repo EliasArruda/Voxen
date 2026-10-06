@@ -60,4 +60,6 @@ else:
     (target / executable).chmod(0o755)
 (target / "SOURCE.md").write_text(f"FFmpeg GPL build from {url}\nSHA-256: {expected}\nBuild/source recipes: https://github.com/BtbN/FFmpeg-Builds/tree/{RELEASE}\nFFmpeg source: https://github.com/FFmpeg/FFmpeg/tree/release/9.0\n")
 shutil.copy2(root / "README.md", output / "README.md")
+shutil.copy2(root / "DESIGN.md", output / "DESIGN.md")
+shutil.copytree(root / "docs", output / "docs", dirs_exist_ok=True)
 print(f"Portable Voxen ready: {output}")

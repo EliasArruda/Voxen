@@ -1,80 +1,181 @@
-# Voxen
+<div align="center">
+  <img src="docs/images/voxen-mark.svg" alt="Voxen" width="80" />
+  <h1>Voxen</h1>
+  <p><strong>Seu próximo som. No seu próprio espaço.</strong></p>
+  <p>Player desktop para Linux e Windows, com busca no YouTube e SoundCloud,<br />biblioteca local e descobertas a partir do que você ouve.</p>
+  <p>
+    <a href="https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml"><img src="https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml/badge.svg" alt="Build e testes" /></a>
+    <img src="https://img.shields.io/badge/.NET-10-512BD4" alt=".NET 10" />
+    <img src="https://img.shields.io/badge/plataformas-Linux%20%7C%20Windows-b9deff" alt="Linux e Windows" />
+  </p>
+  <p><a href="#começar">Começar</a> · <a href="#recursos">Recursos</a> · <a href="#atalhos">Atalhos</a> · <a href="#desenvolvimento">Desenvolvimento</a></p>
+</div>
 
-Player desktop em C# / .NET 10 / Blazor / PhotinoX.Blazor 5.3.3. Usa a WebView nativa do sistema, sem Electron ou Chromium embarcado. `Routes.razor` é o componente raiz; o Router usa `NotFoundPage` do .NET 10.
+![Interface Studio do Voxen](docs/images/voxen-studio.png)
 
-## Funcionalidades
+Voxen reúne pesquisa, biblioteca e reprodução em uma interface de vidro azul. Usa a WebView do sistema para a interface e **FFmpeg + SDL3 para o áudio**, sem Electron ou Chromium embarcado. Músicas são transmitidas; salvar uma faixa guarda seus metadados, não uma cópia offline.
 
-- Busca YouTube com debounce de 350 ms, cancelamento, timeout, até 20 resultados e proteção contra respostas antigas.
-- Play, pausa, retomada, parada, seek, volume, duração e posição reais. Áudio AAC obtido por YoutubeExplode, decodificado por FFmpeg e reproduzido em SDL3.
-- Fila em memória, entradas independentes mesmo para faixas repetidas, remoção, limpeza, anterior e próxima. Fim da faixa avança automaticamente.
-- Autoplay opcional: pesquisa recomendações nos últimos 15 segundos da última faixa. Prefetch não modifica a fila manual; desligar ou parar descarta a recomendação. Limite de 200 entradas.
-- SoundCloud opcional com OAuth, cache/refresh de token, pesquisa de faixas públicas reproduzíveis e resolução HLS. Credenciais ausentes deixam a fonte desativada.
-- Interface Studio com vidro translúcido azul, controles arredondados, fontes locais, foco de teclado e estados de erro/vazio. Painel de fila vira drawer abaixo de 1280px.
+## Recursos
 
-Biblioteca, favoritos e playlists persistidas ainda não estão implementados. Busca e recomendação do YouTube usam o canal como artista. Faixas bloqueadas, restritas ou sem AAC compatível podem falhar; a interface permite tentar novamente ou escolher outra.
+- **Duas fontes:** busca YouTube e integração pública do SoundCloud sem credenciais pessoais. API oficial do SoundCloud disponível como opção.
+- **Player nativo:** reprodução, pausa, anterior/próxima, avanço na faixa, volume e fila com até 200 entradas.
+- **Biblioteca local:** músicas salvas, favoritos e playlists que podem ser criadas, renomeadas, editadas e reproduzidas.
+- **Descobertas pessoais:** recomendações a partir dos artistas ouvidos, favoritos, frequência e recência, com motivos visíveis.
+- **Continuar descobrindo:** reprodução automática opcional depois da fila; suas escolhas manuais têm prioridade.
+- **Teclado e acessibilidade:** atalhos com proteção para campos de texto, foco visível, ajuda e estados de erro com recuperação.
+- **Studio responsivo:** navegação, conteúdo e inspector em três colunas; a fila vira painel recolhível em janelas menores.
 
-## Executar
+## Começar
 
-Requer SDK .NET 10, sessão gráfica e dependências nativas da PhotinoX. Linux usa WebKitGTK; Windows usa WebView2 instalado no sistema. O áudio usa FFmpeg + SDL3 e não depende dos codecs ou plugins GStreamer do WebView.
+### Pacote portátil
+
+1. Abra [Build, checks and portable packages](https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml) e escolha uma execução **bem-sucedida da branch `main`**.
+2. Baixe o artefato `Voxen-linux-x64` ou `Voxen-win-x64`. O GitHub pode exigir login para baixar artefatos.
+3. Extraia o pacote inteiro, mantendo suas pastas, e execute `Voxen` no Linux ou `Voxen.exe` no Windows.
+
+No Linux, se a extração não preservar a permissão de execução:
 
 ```sh
+chmod +x Voxen tools/ffmpeg/ffmpeg
+./Voxen
+```
+
+Os pacotes incluem .NET, SDL3 e FFmpeg. Precisam de sessão gráfica, saída de áudio e WebView nativa: **WebKitGTK no Linux** ou **WebView2 no Windows**. O áudio nativo não exige plugins GStreamer. Os artefatos da CI ficam disponíveis por 14 dias; ainda não há um instalador ou release estável publicado.
+
+### Primeira música
+
+Abra **Buscar**, escolha a fonte e digite uma música ou artista. Clique em **Ouvir agora** ou no play da linha. Use **+** para montar a fila, o **coração** para favoritar e o **marcador** para salvar na biblioteca.
+
+Em **Biblioteca**, crie uma playlist. Escolha a coleção Salvas ou Favoritos, selecione a playlist de destino e adicione as faixas. **Ouvir coleção** adiciona as músicas à fila e inicia a primeira. Exclusão de playlist e limpeza de histórico pedem confirmação.
+
+## Como funcionam as recomendações
+
+O Voxen constrói um perfil local a partir de escutas qualificadas e favoritos. Uma escuta conta após **30 segundos ou metade da duração**, com mínimo de **5 segundos**. Pausa e avanços manuais não contam como escuta.
+
+A seleção usa afinidade por artista e palavras dos títulos, favoritos, repetição e recência. Busca candidatos em até três referências de artistas, remove as últimas 20 faixas ouvidas e as faixas da fila, filtra gravações duplicadas e limita a duas recomendações por artista. A duração também evita privilegiar mixes muito longos.
+
+Esse método usa metadados, não análise sonora ou um modelo de IA. Em títulos convencionais “Artista - Música”, o artista pode ser inferido do título; nos demais casos, o canal/uploader é a referência disponível. Uma conta nova recebe descobertas iniciais; ouvir e favoritar melhora a seleção. **Atualizar descobertas** refaz a busca com seu perfil atual.
+
+**Continuar descobrindo** prepara uma candidata durante a última faixa. Ao terminar a fila, ela entra somente se o recurso continuar ativo e não houver uma escolha manual. Ativar depois que a faixa terminou também inicia uma descoberta. Parar, limpar a fila ou desligar o recurso cancela a continuação pendente.
+
+## Atalhos
+
+Funcionam com a janela do Voxen em foco. Campos de texto, composição de teclado e controles nativos mantêm seu comportamento. A ajuda também está no botão de teclado da barra superior.
+
+| Ação | Atalho |
+| --- | --- |
+| Buscar e focar pesquisa | `Ctrl + K` ou `/` |
+| Reproduzir / pausar | `Espaço` |
+| Próxima / anterior | `N` / `P` |
+| Avançar / voltar 5 segundos | `Direita` / `Esquerda` |
+| Aumentar / reduzir volume em 5% | `Cima` / `Baixo` |
+| Silenciar / restaurar volume | `M` |
+| Favoritar faixa atual | `F` |
+| Salvar faixa atual | `B` |
+| Abrir / fechar fila | `Q` |
+| Biblioteca / início | `Alt + L` / `Alt + H` |
+| Mostrar ajuda | `?` |
+| Fechar ajuda ou fila | `Esc` |
+
+## SoundCloud
+
+Por padrão, o Voxen pesquisa faixas públicas pelo adaptador do site e reproduz o áudio no mesmo motor FFmpeg/SDL do YouTube. **Você não precisa fornecer uma chave.** O adaptador descobre a identificação pública usada pelo site e a mantém temporariamente em memória. Não exige login ou armazena cookies da sua conta.
+
+Essa integração é **não oficial**: endpoints internos podem mudar e interromper busca ou reprodução até uma atualização. Faixas bloqueadas, previews e formatos protegidos não são oferecidos como reprodução completa. Restrições da fonte continuam aplicáveis.
+
+Para usar a API oficial, configure estas variáveis no ambiente antes de iniciar:
+
+| Variável | Uso |
+| --- | --- |
+| `VOXEN_SOUNDCLOUD_CLIENT_ID` | Identificador do aplicativo autorizado |
+| `VOXEN_SOUNDCLOUD_CLIENT_SECRET` | Segredo do aplicativo autorizado |
+
+Quando ambas existem, a API oficial tem prioridade. Não coloque valores no código, commits ou pacotes distribuídos. `.env` não é carregado automaticamente. OAuth/refresh e HLS oficiais são cobertos por fixtures HTTP; a validação real sem credenciais usa o adaptador público.
+
+## Seus dados
+
+A biblioteca guarda somente metadados em:
+
+- Linux: normalmente `~/.local/share/Voxen/library.json`.
+- Windows: `%LOCALAPPDATA%\Voxen\library.json`.
+
+O histórico é local e pode ser apagado pela biblioteca. Não há sincronização de conta. Pesquisas e pedidos de áudio são enviados às fontes correspondentes; o perfil local não é enviado como um cadastro externo. A fila dura apenas a sessão.
+
+O armazenamento aceita até 2.000 faixas salvas, 2.000 favoritos, 100 playlists com 500 faixas cada e 1.000 entradas de histórico, dentro de um limite total de 8 MB. Arquivos inválidos são preservados e informados; gravações são atômicas. Apenas uma instância do aplicativo roda por usuário para evitar sobrescritas concorrentes. Para fazer backup, copie `library.json` com o aplicativo fechado.
+
+## Desenvolvimento
+
+Requer **SDK .NET 10**, FFmpeg no `PATH` e as dependências nativas da WebView. Node é necessário para os checks JavaScript; Python 3 é usado no empacotamento.
+
+```sh
+git clone https://github.com/EliasArruda/Voxen.git
+cd Voxen
 dotnet restore
 dotnet run
 ```
 
-Para desenvolver com `dotnet run`, tenha `ffmpeg` no PATH ou configure `VOXEN_FFMPEG_PATH` com seu caminho. Seu computador já possui FFmpeg. O runtime SDL3 acompanha o NuGet.
+Para escolher outro FFmpeg, configure `VOXEN_FFMPEG_PATH` com o caminho do executável. A execução procura, nesta ordem: essa variável, `tools/ffmpeg` do pacote e o `PATH`. Não é necessário compilar Node/Tailwind para iniciar; CSS, scripts e fontes utilizados já estão no repositório.
 
-Para distribuir sem exigir SDK .NET nem instalação manual de FFmpeg:
+### Verificar
+
+```sh
+dotnet build --configuration Release
+dotnet run --project Tests/Voxen.Checks.csproj --configuration Release
+npm test
+```
+
+Áudio nativo com saída simulada, para teste sem dispositivo de som:
+
+```sh
+SDL_AUDIODRIVER=dummy dotnet run --project Tests/Voxen.Checks.csproj --configuration Release -- --native
+```
+
+No PowerShell, defina `$env:SDL_AUDIODRIVER = 'dummy'` antes do comando `dotnet run`. Testes de rede externos são opcionais:
+
+```sh
+dotnet run --project Tests/Voxen.Checks.csproj -- --youtube
+dotnet run --project Tests/Voxen.Checks.csproj -- --soundcloud
+```
+
+A CI executa build, checks determinísticos, regressões JavaScript, empacotamento e checks nativos em **Linux e Windows**. Busca externa não é requisito da CI. Áudio real do YouTube e SoundCloud e controles nativos foram validados no Linux; fluxos compartilhados da interface foram testados em Chromium. A interface gráfica do Windows ainda precisa de homologação em dispositivo.
+
+### Gerar pacotes
 
 ```sh
 python3 scripts/publish.py --rid linux-x64 --output artifacts/Voxen-linux-x64
 python3 scripts/publish.py --rid win-x64 --output artifacts/Voxen-win-x64
 ```
 
-O script publica .NET self-contained, inclui SDL3 e empacota FFmpeg 9.0 de um build fixado com SHA-256 verificado. O primeiro publish baixa um arquivo grande de build; ele fica em cache ignorado pelo Git. Os pacotes continuam exigindo a WebView nativa e um sistema de áudio funcional. Não existe uma dependência multimídia instalada em todos os computadores; distribuir o motor junto resolve a instalação separada de codecs para o usuário.
-
-Não é necessário build de Node para executar. CSS e fontes são locais; arquivos Tailwind do projeto inicial foram preservados. FFmpeg reproduz HLS no desktop. Um backend HTML5 de testes do navegador mantém hls.js 1.7.3 como fallback opcional. Licenças acompanham fontes e biblioteca.
-
-## SoundCloud
-
-Configure localmente, antes de iniciar, `VOXEN_SOUNDCLOUD_CLIENT_ID` e `VOXEN_SOUNDCLOUD_CLIENT_SECRET`. Não coloque valores no código ou em commits; `.env` não é carregado automaticamente. Reinicie o aplicativo após configurar o ambiente. Não distribua suas credenciais em um binário.
-
-Cada usuário precisa de aplicativo autorizado na API oficial. Sem credenciais, o YouTube continua funcionando. OAuth e metadados foram testados com HTTP controlado; **SoundCloud real ainda não foi validado**, porque não há credenciais disponíveis.
-
-O stream HLS usa manifesto autenticado no backend e URLs assinadas de segmentos no WebView. Os tokens OAuth nunca entram no JavaScript. Restrições e permissões da fonte continuam aplicáveis.
+O script gera uma aplicação self-contained e inclui um build fixado de FFmpeg, com SHA-256 verificado. O primeiro uso baixa um arquivo grande, mantido em cache local ignorado pelo Git. Licenças e origem do FFmpeg acompanham o pacote.
 
 ## Arquitetura
 
-`Blazor UI → serviços → providers`. `Track` não depende de YoutubeExplode. `MusicProviders` seleciona YouTube/SoundCloud; `SearchSession` pertence à página. `QueueService`, `PlayerService` e `RecommendationService` são separados; `PlaybackCoordinator` coordena seus eventos.
+| Camada | Responsabilidade |
+| --- | --- |
+| Blazor + PhotinoX | Interface na WebView nativa |
+| `SearchSession` | Debounce de 350 ms, cancelamento e proteção contra resultados antigos |
+| `MusicProviders` | Roteamento YouTube / SoundCloud oficial ou público |
+| `PlayerService` + `PlaybackCoordinator` | Estado, transporte, fila e continuação automática |
+| `NativeAudioService` | Um processo FFmpeg, PCM limitado e saída SDL3 |
+| `AudioProxy` | Stream atual, token de sessão e HTTP Range em loopback |
+| `LibraryService` + `ListeningHistoryService` | Metadados persistidos e escutas qualificadas |
+| `RecommendationService` | Afinidade local, exclusões e diversidade |
 
-O desktop usa um processo FFmpeg e um stream SDL3. O pipe PCM e a saída mantêm cerca de um segundo de buffer; pausa, seek e volume são controlados pelo serviço. Eventos chegam à UI pelo dispatcher Blazor. A prévia de navegador usa o backend HTML5 para testar a mesma superfície. `AudioProxy` abre uma porta efêmera em `127.0.0.1` e entrega o stream atual com token de sessão e HTTP Range. Não grava músicas, não mantém um catálogo completo em memória e não expõe uma porta na rede local. A fila é descartada ao fechar o aplicativo.
+O proxy escuta somente em `127.0.0.1`, numa porta efêmera. O áudio não é baixado integralmente para disco. A prévia de navegador usada nos testes possui um backend HTML5 separado, com hls.js como fallback HLS; o desktop usa o motor nativo.
 
-## Verificar
+## Contribuir
 
-```sh
-dotnet build --configuration Release
-dotnet run --project Tests/Voxen.Checks.csproj
-node Tests/audio.checks.mjs
-SDL_AUDIODRIVER=dummy dotnet run --project Tests/Voxen.Checks.csproj -- --native
-```
+Trabalhe em uma branch focada e abra um pull request com problema, solução e verificações. Separe incrementos coerentes, evite incluir credenciais e confirme que os checks de Linux e Windows passam. Bugs reproduzíveis podem ser reportados em [Issues](https://github.com/EliasArruda/Voxen/issues), com plataforma, passos e mensagem de erro.
 
-Os checks cobrem pesquisa, fila, streaming Range, callbacks antigos, erros/retry, autoplay, parada durante recomendação, prioridade de adições manuais e contrato OAuth/HLS SoundCloud. Node é usado somente no teste de regressão JavaScript.
+## Tecnologias e créditos
 
-Busca externa opcional:
+Voxen é independente de YouTube e SoundCloud. Serviços e conteúdo permanecem sujeitos às condições das fontes.
 
-```sh
-dotnet run --project Tests/Voxen.Checks.csproj -- --youtube
-```
+- [PhotinoX](https://github.com/PhotinoX/PhotinoX) — janela e WebView nativas.
+- [YoutubeExplode](https://github.com/Tyrrrz/YoutubeExplode) — pesquisa e streams do YouTube.
+- [FFmpeg](https://ffmpeg.org/) e [SDL3](https://libsdl.org/) — áudio nativo.
+- [SoundCloud Developers](https://developers.soundcloud.com/) — API oficial e documentação.
+- [Geist](https://github.com/vercel/geist-font) e [Inter](https://github.com/rsms/inter) — fontes locais, com arquivos OFL no repositório.
+- [hls.js](https://github.com/video-dev/hls.js) — backend opcional da prévia, com aviso de licença local.
 
-A CI executa build e checks determinísticos em Linux e Windows. Testes externos não rodam na CI. Validação local: áudio real do YouTube e fluxos da UI em Chromium usando os componentes compartilhados; reprodução real no Photino/Linux com FFmpeg + SDL3 (play, pausa, seek, retomada e parada). Execução gráfica no Windows exige validação adicional.
-
-## Referências
-
-- [PhotinoX](https://github.com/PhotinoX/PhotinoX)
-- [YoutubeExplode](https://github.com/Tyrrrz/YoutubeExplode)
-- [SoundCloud: guia oficial](https://developers.soundcloud.com/docs/api/guide)
-- [FFmpeg](https://ffmpeg.org/)
-- [SDL3](https://libsdl.org/)
-- [hls.js](https://github.com/video-dev/hls.js)
-
-Direção visual: WaveMix Universal Search & Studio Player, tela Stitch `55b8670e6bac469f9037e3f83d6321a5`, adaptada à preferência de vidro e arredondamento do usuário. Os tokens ficam em `wwwroot/Styles/voxen.css` e `DESIGN.md`.
+A composição Studio segue a referência WaveMix selecionada para o projeto, adaptada ao vidro azul e às formas arredondadas do Voxen. Decisões visuais estão em [DESIGN.md](DESIGN.md).

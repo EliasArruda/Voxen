@@ -38,3 +38,9 @@
 - Explicit guards preserve typing, composition and native focused button behavior. Escape respects inputs; closing help restores previous focus. Search focus settles after route heading focus.
 - Node mapping regression and browser flows passed: Ctrl+K focus, typing protection, pause, volume/mute, favorite/save, navigation, help/focus return/Escape and mobile queue drawer.
 - README restructuring and refreshed portable packages are next.
+
+## 2026-10-06 — Studio guide and delivery
+- PR #4 merged after Linux/Windows build, deterministic/Node/native checks and independent code/UI review.
+- Professional Portuguese README covers installation, library, recommendation signals, shortcuts, integration limits, data storage and contribution. Includes a fresh real SoundCloud search/playback capture and vector brand mark.
+- Portable packages include documentation and its local image assets. Final Linux package generated; native startup and second-launch rejection passed.
+- Final smoke exposed session-local mutex scope across Linux shells. Explicit user-only, cross-session options fixed it; two independent native launches passed: second exits with the existing-window message. Independent review approved the fix.
