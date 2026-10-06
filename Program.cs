@@ -8,6 +8,7 @@ var builder = PhotinoBlazorApp.CreateBuilder(args);
 builder.Services.AddSingleton<YoutubeClient>();
 builder.Services.AddSingleton<YouTubeService>();
 builder.Services.AddSingleton<SoundCloudService>();
+builder.Services.AddSingleton<SoundCloudWebService>();
 builder.Services.AddSingleton<MusicProviders>();
 builder.Services.AddSingleton<ITrackSearchProvider>(services => services.GetRequiredService<MusicProviders>());
 // Each search page owns its session; DI does not retain disposed transient sessions.
