@@ -108,7 +108,7 @@ Gelo ilumina ações principais, navegação ativa, foco e controles de áudio. 
 
 ### Neutral
 
-Azul noturno sustenta o fundo. Vidro azul (`surface`), ardósia elevada (`raised`) e ardósia de interação (`hover`) usam transparência real; texto claro e metadados azulados mantêm hierarquia. Bordas translúcidas recortam as superfícies. YouTube conserva vermelho como identificação de fonte; SoundCloud tem variante laranja, condicionado às credenciais.
+Azul noturno sustenta o fundo. Vidro azul (`surface`), ardósia elevada (`raised`) e ardósia de interação (`hover`) usam transparência real; texto claro e metadados azulados mantêm hierarquia. Bordas translúcidas recortam as superfícies. YouTube conserva vermelho como identificação de fonte; SoundCloud usa variante laranja e busca pública sem credenciais do usuário; OAuth oficial configurado é opcional e preferido.
 
 ## Typography
 
@@ -122,7 +122,7 @@ Shell de três colunas com altura `100dvh`, mínimo (450px), navegação (216px)
 
 Até (1279px), inspector vira drawer não modal acionado por botão: top (80px), right (12px), bottom (128px). Até (899px), navegação vira trilho (64px), shell usa padding/gap (8px), artista passa abaixo do título e volume desaparece. Até (520px), trilho (48px), shell (6px), player (116px); timeline ocupa uma segunda linha. Drawer usa top (68px), right (6px), bottom (134px), máximo `calc(100vw - 72px)`.
 
-Lista desktop usa grid `32px 38px minmax(0,2fr) minmax(0,1fr) 74px 42px 32px`, gap (8px), altura mínima de faixa (62px). No móvel, grid `28px minmax(0,1fr) 28px` mantém reproduzir, título/artista e adicionar; capa, fonte e duração saem da linha. Descoberta passa de duas colunas a uma.
+Lista desktop usa grid `30px 36px minmax(0,2fr) minmax(0,1fr) 74px 40px 102px`, gap (8px), altura mínima de faixa (62px). Até (899px), grid `30px 34px minmax(0,1fr) 66px 38px 102px`; até (520px), grid `28px 28px minmax(0,1fr) 90px` mantém reproduzir, capa, título/artista e ações de favoritar, salvar e adicionar; fonte e duração saem da linha. Descoberta passa de duas colunas a uma; recomendações empilham as ações abaixo da faixa no móvel.
 
 ## Elevation & Depth
 
@@ -140,8 +140,12 @@ Painéis e containers principais usam container; barra e descoberta usam tile. N
 - **Busca:** vidro mais leve, raio search, padding (4px 14px), input (42px); borda gelo no foco. Input tem nome acessível e limpar explícito.
 - **Navegação:** itens mínimos (42px), padding (10px 13px); estado ativo usa gelo translúcido sem borda lateral. Trilho mantém nomes acessíveis.
 - **Selo de fonte:** cápsula Inter (10px, peso 550), fundo vermelho translúcido, borda `rgb(255 77 77 / .25)`; seletor de fonte usa estado `aria-pressed` e indisponibilidade explícita.
-- **Resultados e descoberta:** containers arredondados; destaque usa gradiente `linear-gradient(115deg, rgb(81 118 153 / .32), rgb(31 44 66 / .65))`. Linhas têm play e adicionar à fila; hover usa raised. Títulos longos truncam na linha, com texto completo no atributo title.
-- **Inspector e player:** capa atual, fila removível e seleção real. Autoplay é opt-in com toggle acessível; faixa atual usa gelo translúcido. Dock mantém play/pause, anterior/próxima, timeline e volume; stop desaparece até 899px. Avisos usam status/alert. SoundCloud fica desabilitado sem credenciais; biblioteca futura permanece indicada.
+- **Resultados e descoberta:** containers arredondados; destaque usa gradiente `linear-gradient(115deg, rgb(81 118 153 / .32), rgb(31 44 66 / .65))`. Linhas têm play, favoritar, salvar e adicionar à fila; coração e marcador usam gelo com preenchimento translúcido no estado selecionado e `aria-pressed`. Hover usa raised. Títulos longos truncam na linha, com texto completo no atributo title.
+- **Inspector e player:** capa atual, fila removível e seleção real. Autoplay é opt-in com toggle acessível, prepara um candidato durante a reprodução e continua quando ativado após o fim da fila; entradas manuais têm precedência. Faixa atual usa gelo translúcido. Dock mantém play/pause, anterior/próxima, timeline e volume; stop desaparece até 899px. Avisos usam status/alert. SoundCloud público está disponível sem credenciais do usuário; a barra lateral identifica integração pública ou API oficial conforme a configuração.
+
+- **Biblioteca:** salvas, favoritos, playlists e histórico de escuta qualificada persistem como metadados locais. Seletores de coleção e playlists usam cápsulas ardósia, contagens discretas e gelo translúcido com `aria-pressed`. Formulários rotulados criam e renomeiam playlists; exclusão e limpeza de histórico pedem confirmação inline. Estados vazios encaminham à busca.
+- **Descobertas pessoais:** listas de recomendações usam surface, hover raised, capas compactas e motivo em gelo. Afinidade local por artista/título, favoritos e escutas orienta a seleção; as últimas 20 faixas ouvidas são excluídas, duplicatas são filtradas e há limite por artista para diversidade. Atualizar e tentar novamente são ações explícitas.
+- **Atalhos:** botão na barra abre ajuda não modal com teclas em Inter sobre raised; oferece busca, transporte, seek, volume, favoritos, salvar, fila e navegação. Atalhos respeitam campos de edição e exigem a janela em foco. O painel mantém fechamento explícito e Escape.
 
 Transições de fundo/cor/borda usam (160ms, ease-out); `prefers-reduced-motion` remove transições e mantém rolagem automática.
 
@@ -155,4 +159,4 @@ Transições de fundo/cor/borda usam (160ms, ease-out); `prefers-reduced-motion`
 ### Don't:
 - Don't reintroduzir carvão/menta como identidade principal.
 - Don't adicionar blur a cada linha ou animação contínua aos campos de cor.
-- Don't apresentar SoundCloud sem credenciais ou biblioteca futura como disponíveis.
+- Don't ocultar estados de erro das fontes públicas ou prometer reprodução offline a partir dos metadados salvos.

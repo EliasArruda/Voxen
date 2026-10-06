@@ -1,0 +1,93 @@
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject Microsoft.JSInterop.IJSRuntime JS
+@inject NavigationManager Navigation
+@inject PlayerService Player
+@inject PlaybackCoordinator Playback
+@inject LibraryService Library
+<button class="icon-button" aria-label="Atalhos do teclado" aria-expanded="@(_help ? "true" : "false")" aria-controls="keyboard-shortcuts" @onclick="ToggleHelp"><Icon Name="keyboard" Size="19" /></button>
+@if (_help)
+{
+    <section id="keyboard-shortcuts" class="shortcuts-panel" aria-label="Atalhos do teclado">
+        <div class="section-heading"><h2>Seu player, pelo teclado</h2><button id="shortcuts-close" class="icon-button" aria-label="Fechar atalhos" @onclick="CloseHelp"><Icon Name="close" Size="17" /></button></div>
+        <p>Funcionam com a janela do Voxen em foco. Digitar em campos mantém o comportamento normal.</p>
+        <dl class="shortcut-list">
+            <div><dt>Buscar e focar pesquisa</dt><dd><kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>/</kbd></dd></div>
+            <div><dt>Reproduzir / pausar</dt><dd><kbd>Espaço</kbd></dd></div>
+            <div><dt>Próxima / anterior</dt><dd><kbd>N</kbd> / <kbd>P</kbd></dd></div>
+            <div><dt>Avançar / voltar 5 segundos</dt><dd><kbd>Direita</kbd> / <kbd>Esquerda</kbd></dd></div>
+            <div><dt>Aumentar / reduzir volume</dt><dd><kbd>Cima</kbd> / <kbd>Baixo</kbd></dd></div>
+            <div><dt>Silenciar / restaurar volume</dt><dd><kbd>M</kbd></dd></div>
+            <div><dt>Favoritar faixa atual</dt><dd><kbd>F</kbd></dd></div>
+            <div><dt>Salvar faixa atual</dt><dd><kbd>B</kbd></dd></div>
+            <div><dt>Mostrar / fechar fila</dt><dd><kbd>Q</kbd></dd></div>
+            <div><dt>Biblioteca / início</dt><dd><kbd>Alt</kbd> + <kbd>L</kbd> / <kbd>H</kbd></dd></div>
+            <div><dt>Mostrar atalhos / fechar painel</dt><dd><kbd>?</kbd> / <kbd>Esc</kbd></dd></div>
+        </dl>
+        @if (_notice is not null) { <p role="status">@_notice</p> }
+    </section>
+}
+@code {
+    [Parameter] public EventCallback QueueToggle { get; set; }
+    [Parameter] public EventCallback DismissPanels { get; set; }
+    private Microsoft.JSInterop.IJSObjectReference? _module;
+    private Microsoft.JSInterop.DotNetObjectReference<KeyboardShortcuts>? _reference;
+    private bool _help, _focusHelp;
+    private double _previousVolume = .7;
+    private string? _notice;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JS.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>("import", "./Scripts/shortcuts.js");
+            _reference = Microsoft.JSInterop.DotNetObjectReference.Create(this);
+            await _module.InvokeVoidAsync("initialize", _reference);
+        }
+        if (_focusHelp && _module is not null) { _focusHelp = false; await _module.InvokeVoidAsync("focusHelp"); }
+    }
+    private async Task ToggleHelp() { if (_help) await CloseHelp(); else { _help = true; _focusHelp = true; } }
+    private async Task CloseHelp()
+    {
+        if (!_help) return;
+        _help = false; _focusHelp = false;
+        if (_module is not null) await _module.InvokeVoidAsync("restoreHelpFocus");
+    }
+    [Microsoft.JSInterop.JSInvokable]
+    public Task ExecuteShortcut(string action) => InvokeAsync(async () =>
+    {
+        try
+        {
+            switch (action)
+            {
+                case "search": Navigation.NavigateTo("/search"); if (_module is not null) await _module.InvokeVoidAsync("focusSearch"); break;
+                case "library": Navigation.NavigateTo("/library"); break;
+                case "home": Navigation.NavigateTo("/"); break;
+                case "toggle" when Player.CurrentTrack is not null && Player.Status != PlaybackStatus.Loading: await Player.ToggleAsync(); break;
+                case "next": await Playback.NextAsync(); break;
+                case "previous": await Playback.PreviousAsync(); break;
+                case "forward": await Player.SeekAsync(Player.Position + 5); break;
+                case "backward": await Player.SeekAsync(Player.Position - 5); break;
+                case "volumeup": await Player.SetVolumeAsync(Player.Volume + .05); break;
+                case "volumedown": await Player.SetVolumeAsync(Player.Volume - .05); break;
+                case "mute": if (Player.Volume > 0) { _previousVolume = Player.Volume; await Player.SetVolumeAsync(0); } else await Player.SetVolumeAsync(_previousVolume); break;
+                case "favorite" when Player.CurrentTrack is { } track: Library.ToggleFavorite(track); break;
+                case "save" when Player.CurrentTrack is { } saved: Library.ToggleSaved(saved); break;
+                case "queue": await QueueToggle.InvokeAsync(); break;
+                case "help": await ToggleHelp(); break;
+                case "dismiss": await CloseHelp(); await DismissPanels.InvokeAsync(); break;
+            }
+            _notice = null;
+        }
+        catch (InvalidOperationException exception) { _notice = exception.Message; }
+        StateHasChanged();
+    });
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try { await _module.InvokeVoidAsync("dispose"); await _module.DisposeAsync(); }
+            catch (Microsoft.JSInterop.JSDisconnectedException) { }
+        }
+        _reference?.Dispose();
+    }
+}

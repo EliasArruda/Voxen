@@ -31,3 +31,10 @@
 - Reproduced failing toggle-after-ended regression before fixing. Discovery now activates after queue end and gives immediate state feedback; manual queue and stop continue to win.
 - Qualified listening excludes large and repeated small seeks. Tests include invalid store formats/nulls, persistence, history and recommendation ranking.
 - Chromium fixture flows passed library actions, collection playback, discovery after end and widths 1440/1280/1000/390. Native FFmpeg/SDL regression passed. Next: keyboard shortcuts, polished README and final packages.
+
+## 2026-10-06 — Keyboard workflow
+- PR #3 merged after passing Linux/Windows CI and independent code/UI review (SHIP for shared Chromium surfaces).
+- Added focused-window search, transport, seek, volume/mute, favorite/save, queue and navigation shortcuts plus nonmodal help.
+- Explicit guards preserve typing, composition and native focused button behavior. Escape respects inputs; closing help restores previous focus. Search focus settles after route heading focus.
+- Node mapping regression and browser flows passed: Ctrl+K focus, typing protection, pause, volume/mute, favorite/save, navigation, help/focus return/Escape and mobile queue drawer.
+- README restructuring and refreshed portable packages are next.

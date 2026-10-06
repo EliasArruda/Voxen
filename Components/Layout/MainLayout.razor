@@ -21,7 +21,7 @@
     </aside>
     <header class="topbar">
         <span class="workspace-title"><Icon Name="headphones" Size="17" /><span>Seu espaço para música</span></span>
-        <div class="topbar-actions"><span class="connection-status"><span class="source-dot"></span>Áudio nativo</span>
+        <div class="topbar-actions"><KeyboardShortcuts QueueToggle="ToggleInspector" DismissPanels="CloseInspector" /><span class="connection-status"><span class="source-dot"></span>Áudio nativo</span>
             <button class="icon-button inspector-toggle" aria-label="Mostrar fila" aria-controls="queue-panel" aria-expanded="@(_showInspector ? "true" : "false")" @onclick="ToggleInspector"><Icon Name="queue" /></button>
         </div>
     </header>
@@ -35,5 +35,6 @@
 </div>
 @code {
     private bool _showInspector;
+    private void CloseInspector() => _showInspector = false;
     private void ToggleInspector() => _showInspector = !_showInspector;
 }
