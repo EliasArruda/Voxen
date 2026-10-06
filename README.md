@@ -52,7 +52,7 @@ Em **Biblioteca**, crie uma playlist. Escolha a coleção Salvas ou Favoritos, s
 
 O destaque da busca, a próxima faixa da fila e a candidata de reprodução automática podem preparar o stream antes do clique. Focar ou passar o cursor no play de uma linha também prepara aquela faixa. A preparação guarda somente metadados e pequenos manifestos em memória por até 90 segundos, com no máximo oito entradas; não baixa a música inteira. Preparação e reprodução compartilham a resolução. URLs que falham são descartadas para a próxima tentativa.
 
-O limite de início é de 20 segundos, do clique ao primeiro áudio. Se a fonte não responder, o player encerra a tentativa e oferece repetir ou escolher outra faixa. A conexão e a duração dependem da fonte e da rede; os testes Linux de faixas já preparadas iniciaram em aproximadamente 100–252 ms.
+O limite de início é de 20 segundos, do clique ao primeiro áudio. Se a fonte não responder, o player encerra a tentativa e oferece repetir ou escolher outra faixa. Uma falha antes do primeiro áudio pode renovar o endereço uma vez, dentro desse mesmo limite. A duração depende da fonte e da rede. Em uma amostra Linux, seis faixas do YouTube iniciaram em 1,5–8,2 segundos e 23 do SoundCloud em aproximadamente 0,7–2,9 segundos; faixas já preparadas podem iniciar antes. Esses valores não são uma garantia.
 
 A capa da faixa colore suavemente o fundo através do vidro. Trocas de capa e chegada de resultados têm transições discretas; a preferência do sistema por movimento reduzido é respeitada.
 
@@ -170,7 +170,7 @@ O script gera uma aplicação self-contained e inclui um build fixado de FFmpeg,
 | `LibraryService` + `ListeningHistoryService` | Metadados persistidos e escutas qualificadas |
 | `RecommendationService` | Afinidade local, exclusões e diversidade |
 
-O proxy escuta somente em `127.0.0.1`, numa porta efêmera. O áudio não é baixado integralmente para disco. A prévia de navegador usada nos testes possui um backend HTML5 separado, com hls.js como fallback HLS; o desktop usa o motor nativo.
+O motor nativo usa o endereço de áudio da fonte quando disponível, permitindo HTTP Range para avanço na faixa. Rádios ao vivo do YouTube usam HLS somente de áudio. O proxy de fallback escuta somente em `127.0.0.1`, numa porta efêmera. Endereços temporários não aparecem na interface ou nas mensagens de erro. O áudio não é baixado integralmente para disco. A prévia de navegador usada nos testes possui um backend HTML5 separado, com hls.js como fallback HLS; o desktop usa o motor nativo.
 
 ## Contribuir
 

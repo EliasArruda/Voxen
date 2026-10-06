@@ -97,14 +97,14 @@ public sealed class SoundCloudWebService : ITrackSearchProvider, IAudioSourcePro
         var url = Text(resolved.RootElement, "url")!;
         if (!Uri.TryCreate(url, UriKind.Absolute, out var streamUri) || streamUri.Scheme != "https") throw new InvalidOperationException("URL de áudio inválida.");
         if (Text(transcoding.GetProperty("format"), "protocol") == "progressive")
-            return new AudioResource(Text(transcoding.GetProperty("format"), "mime_type") ?? "audio/mpeg", token => _http.GetStreamAsync(url, token));
+            return new AudioResource(Text(transcoding.GetProperty("format"), "mime_type") ?? "audio/mpeg", token => _http.GetStreamAsync(url, token), NativeInputUrl: url);
         var playlist = await ReadAsync(url, 262_144, cancellationToken);
         if (!playlist.StartsWith("#EXTM3U")) throw new InvalidOperationException("Manifesto do SoundCloud não suportado.");
         var normalized = string.Join('\n', playlist.Split('\n').Select(line => line.StartsWith('#')
             ? Regex.Replace(line, "URI=\"([^\"]+)\"", match => $"URI=\"{new Uri(streamUri, match.Groups[1].Value)}\"")
             : string.IsNullOrWhiteSpace(line) ? line : new Uri(streamUri, line.Trim()).ToString()));
         var bytes = Encoding.UTF8.GetBytes(normalized);
-        return new AudioResource("application/vnd.apple.mpegurl", _ => Task.FromResult<Stream>(new MemoryStream(bytes)), IsHls: true);
+        return new AudioResource("application/vnd.apple.mpegurl", _ => Task.FromResult<Stream>(new MemoryStream(bytes)), IsHls: true, NativeInputUrl: url);
     }
     private static string? Text(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     public void Dispose() { _http.Dispose(); _clientGate.Dispose(); }
