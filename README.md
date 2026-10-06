@@ -11,9 +11,9 @@
   <p><a href="#começar">Começar</a> · <a href="#recursos">Recursos</a> · <a href="#atalhos">Atalhos</a> · <a href="#desenvolvimento">Desenvolvimento</a></p>
 </div>
 
-![Interface Studio do Voxen](docs/images/voxen-studio.png)
+![Interface Summer Sky do Voxen](docs/images/voxen-studio.png)
 
-Voxen reúne pesquisa, biblioteca e reprodução em uma interface de vidro azul. Usa a WebView do sistema para a interface e **FFmpeg + SDL3 para o áudio**, sem Electron ou Chromium embarcado. Músicas são transmitidas; salvar uma faixa guarda seus metadados, não uma cópia offline.
+Voxen reúne pesquisa, biblioteca e reprodução em uma interface Summer Sky: céu ilustrado, vidro azul e controles em tons suaves. Usa a WebView do sistema para a interface e **FFmpeg + SDL3 para o áudio**, sem Electron ou Chromium embarcado. Músicas são transmitidas; salvar uma faixa guarda seus metadados, não uma cópia offline.
 
 ## Recursos
 
@@ -188,3 +188,7 @@ Voxen é independente de YouTube e SoundCloud. Serviços e conteúdo permanecem 
 - [hls.js](https://github.com/video-dev/hls.js) — backend opcional da prévia, com aviso de licença local.
 
 A composição Studio segue a referência WaveMix selecionada para o projeto, adaptada ao vidro azul e às formas arredondadas do Voxen. Decisões visuais estão em [DESIGN.md](DESIGN.md).
+
+### Referência visual
+
+O visual Summer Sky adapta a referência escolhida do [SpicetifyCat](https://github.com/Adrien5902/SpicetifyCat). A origem do wallpaper e a licença MIT fornecida pelo repositório estão em `wwwroot/Images/SOURCE.md` e `SpicetifyCat-LICENSE.txt`.

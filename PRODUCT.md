@@ -11,8 +11,8 @@ Music listeners who want a lightweight and customizable alternative to Spotify/Y
 Find and play music quickly while keeping metadata, queue and network requests bounded.
 
 ## Design direction
-User selected WaveMix Studio Search & Studio Player, then requested frosted glass backgrounds and rounder forms.
-Deep blue/slate glass, ice-blue accent, local Geist/Inter typography, compact track rows, left navigation, responsive queue inspector and persistent player.
+User selected SpicetifyCat Summer Sky as the replacement visual reference, retaining frosted glass and rounded forms.
+Illustrated summer sky, translucent blue surfaces, soft peach accent, local Geist/Inter typography, slim icon navigation, centered search shortcut, compact track rows, responsive queue inspector and persistent player.
 See `.impeccable/surfaces/studio.md` for the direction contract.
 
 ## Principles
