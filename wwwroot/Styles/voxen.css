@@ -370,3 +370,61 @@ input[type="range"] { accent-color: var(--primary); min-width: 0; height: 18px; 
 .source-selector button:disabled { opacity: .65; }
 .source-selector span { font-size: 9px; }
 .dock-track a:hover { text-decoration: underline; }
+
+/* Library and personalized discovery extend the same frosted studio surface. */
+.track-header, .track-row { grid-template-columns: 30px 36px minmax(0,2fr) minmax(0,1fr) 74px 40px 102px; }
+.track-actions { display: flex; gap: 0; align-items: center; justify-content: end; }
+.track-actions .icon-button { width: 34px; height: 36px; }
+.selected-action { color: var(--primary); }
+.selected-action .icon { fill: rgb(185 222 255 / .16); }
+.action-error { grid-column: 3 / -1; font-size: 11px; color: var(--ink); padding-bottom: 8px; }
+.library-link, .text-button { color: var(--primary); font-size: 12px; font-weight: 550; border: 0; background: transparent; border-radius: 12px; padding: 8px 4px; display: inline-flex; align-items: center; gap: 6px; }
+.text-button:hover, .library-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.library-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
+.library-tabs button, .playlist-choice { color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.library-tabs button span { margin-left: 7px; font-size: 11px; color: var(--muted); }
+.library-tabs button[aria-pressed="true"], .playlist-choice[aria-pressed="true"] { border-color: var(--primary); background: rgb(185 222 255 / .12); }
+.playlist-manager { margin-bottom: 32px; }
+.inline-form, .collection-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0 16px; }
+.inline-form label, .collection-controls label { color: var(--muted); font-size: 12px; }
+.inline-form input, select { color: var(--ink); background: #17263c; border: 1px solid var(--line); padding: 10px 12px; border-radius: 12px; min-width: 0; max-width: 100%; }
+.inline-form input { flex: 1; min-width: 160px; caret-color: var(--primary); }
+.inline-form input::placeholder { color: var(--muted); }
+.inline-form .secondary-button, .collection-controls .secondary-button, .inline-confirm .secondary-button { margin-top: 0; }
+.playlist-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.playlist-choice { display: flex; align-items: center; gap: 8px; max-width: 100%; }
+.playlist-choice span { overflow-wrap: anywhere; }
+.playlist-choice small { color: var(--muted); white-space: nowrap; }
+.inline-notice, .inline-confirm { margin: 12px 0; padding: 14px 16px; background: var(--raised); border-radius: 16px; font-size: 12px; }
+.inline-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.playlist-membership { margin-top: 18px; }
+.playlist-membership > div { display: flex; align-items: center; gap: 12px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
+.playlist-membership span { flex: 1; font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.playlist-membership button { flex-shrink: 0; }
+.discovery-context { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+.recommendation-list { list-style: none; margin: 0; padding: 0; border-radius: 24px; background: var(--surface); overflow: hidden; }
+.recommendation-list > li { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.recommendation-list > li:last-child { border-bottom: 0; }
+.recommendation-list > li:hover { background: var(--raised); }
+.recommendation-play { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; color: var(--ink); border: 0; background: transparent; text-align: left; border-radius: 12px; padding: 0; }
+.recommendation-play > span:last-child { min-width: 0; }
+.recommendation-play strong, .recommendation-play small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.recommendation-play small { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.recommendation-play .recommendation-reason { color: var(--primary); font-size: 10px; }
+.recommendation-cover { width: 56px; height: 56px; border-radius: 14px; background: var(--raised); overflow: hidden; flex-shrink: 0; display: grid; place-items: center; }
+.recommendation-cover img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 899px) {
+    .track-header, .track-row { grid-template-columns: 30px 34px minmax(0,1fr) 66px 38px 102px; }
+}
+@media (max-width: 520px) {
+    .track-header, .track-row { grid-template-columns: 28px 28px minmax(0,1fr) 90px; gap: 6px; padding: 8px; }
+    .track-header { display: none; }
+    .track-row > .track-artist, .track-row > .source-badge, .track-row > .track-duration { display: none; }
+    .track-row .track-art { display: grid; }
+    .track-actions .icon-button { width: 30px; height: 38px; }
+    .recommendation-list > li { padding: 12px 10px; flex-wrap: wrap; gap: 6px; }
+    .recommendation-play { flex-basis: calc(100% - 10px); }
+    .recommendation-list .track-actions { margin-left: 66px; }
+    .inline-form label { width: 100%; }
+    .inline-form input { min-width: 100px; }
+}

@@ -4,6 +4,10 @@ using Voxen.Services;
 using YoutubeExplode;
 using Microsoft.Extensions.DependencyInjection;
 
+// One writer owns the local metadata store; a second launch cannot overwrite another session.
+using var instance = new Mutex(true, "Voxen." + Environment.UserName, out var firstInstance);
+if (!firstInstance) { Console.WriteLine("Voxen já está aberto neste usuário. Use a janela existente."); return 0; }
+
 var builder = PhotinoBlazorApp.CreateBuilder(args);
 builder.Services.AddSingleton<YoutubeClient>();
 builder.Services.AddSingleton<YouTubeService>();
@@ -20,6 +24,8 @@ builder.Services.AddSingleton<AudioProxy>();
 builder.Services.AddSingleton<NativeAudioService>();
 builder.Services.AddSingleton<PlayerService>();
 builder.Services.AddSingleton<QueueService>();
+builder.Services.AddSingleton<LibraryService>();
+builder.Services.AddSingleton<ListeningHistoryService>();
 builder.Services.AddSingleton<RecommendationService>();
 builder.Services.AddSingleton<PlaybackCoordinator>();
 

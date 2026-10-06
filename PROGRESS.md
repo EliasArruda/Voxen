@@ -23,3 +23,11 @@
 - Added bounded public website search/audio adapter, with discovered website client identity, six-hour in-memory cache and one refresh on 401/403. Official OAuth remains preferred when configured.
 - Public adapter rejects blocked/preview/unsupported encrypted formats; real public search and audio resolution passed without user credentials.
 - Fixture checks cover refresh, filtering and HLS normalization. Next: persisted library/history, personalized discovery, keyboard controls and README.
+
+## 2026-10-06 — Library and personalized discovery
+- PR #2 merged after Linux/Windows CI and independent review; actual Photino Linux SoundCloud play/pause/seek/resume/stop passed without user credentials.
+- Local saved tracks, favorites, playlist create/rename/delete/membership/playback and qualified history added. Atomic writes, bounded metadata, corrupt-file preservation and per-user single-instance protection.
+- Recommendations rank artist/title affinity, favorite/repeat/recency signals, exclude last 20 listens and queue, suppress duplicate recordings and limit repeated artists.
+- Reproduced failing toggle-after-ended regression before fixing. Discovery now activates after queue end and gives immediate state feedback; manual queue and stop continue to win.
+- Qualified listening excludes large and repeated small seeks. Tests include invalid store formats/nulls, persistence, history and recommendation ranking.
+- Chromium fixture flows passed library actions, collection playback, discovery after end and widths 1440/1280/1000/390. Native FFmpeg/SDL regression passed. Next: keyboard shortcuts, polished README and final packages.

@@ -42,11 +42,22 @@ public sealed class PlaybackCoordinator : IDisposable
     }
     public async Task StopAsync() { CancelRecommendation(); await _player.StopAsync(); Changed?.Invoke(); }
     public async Task ClearAsync() { CancelRecommendation(); await _player.StopAsync(); _queue.Clear(); }
-    public void ToggleAutoplay() { Autoplay = !Autoplay; if (!Autoplay) CancelRecommendation(); else PrefetchWhenNeeded(); Changed?.Invoke(); }
+    public async Task ToggleAutoplay()
+    {
+        Autoplay = !Autoplay;
+        if (!Autoplay) { CancelRecommendation(); Notice = "Reprodução automática desativada."; }
+        else
+        {
+            Notice = "Ativado. Novas descobertas continuam depois da sua fila.";
+            PrefetchWhenNeeded();
+        }
+        Changed?.Invoke();
+        if (Autoplay && _player.Status == PlaybackStatus.Ended) await AdvanceAsync();
+    }
     private void PrefetchWhenNeeded()
     {
         if (!Autoplay || _player.Status != PlaybackStatus.Playing || _player.Duration <= 0
-            || _player.Duration - _player.Position > 15 || _queue.Next is not null
+            || _queue.Next is not null
             || _queue.CurrentKey is not { } key || _requestedFor == key || _queue.Entries.Count >= 200) return;
         _requestedFor = key;
         _prefetch = RequestRecommendationAsync();
@@ -61,7 +72,7 @@ public sealed class PlaybackCoordinator : IDisposable
         // Manual additions win over any recommendation fetched while the queue was empty.
         if (!Autoplay || _player.Status != PlaybackStatus.Ended || _queue.CurrentKey != key) return;
         if (_queue.Next is { } entry) await PlayEntryAsync(entry.Key);
-        else if (_candidate is { } candidate) await PlayEntryAsync(_queue.Add(candidate).Key);
+        else if (_candidate is { } candidate && _queue.Entries.Count < 200) await PlayEntryAsync(_queue.Add(candidate).Key);
     }
     private async Task RequestRecommendationAsync()
     {

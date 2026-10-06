@@ -46,7 +46,7 @@ internal static class PlaybackChecks
         Check(player.CurrentTrack?.Id == "two" && queue.Current?.Track.Id == "two", "Track end automatically advances queue");
         await player.OnAudioEvent(oldVersion, "error", 0, 0);
         Check(player.Status == PlaybackStatus.Loading && player.CurrentTrack?.Id == "two", "Late browser events cannot overwrite next track");
-        coordinator.ToggleAutoplay();
+        await coordinator.ToggleAutoplay();
         await player.OnAudioEvent(js.Module.Version, "ended", 12, 12);
         Check(player.CurrentTrack?.Id == "recommended", "Autoplay appends an unseen recommendation at queue end");
         await player.SetVolumeAsync(2); Check(player.Volume == 1, "Player clamps volume to valid native range");
@@ -82,7 +82,7 @@ internal static class PlaybackChecks
             var queue = new QueueService();
             var delayed = new DelayedRecommendation();
             using var coordinator = new PlaybackCoordinator(queue, player, new RecommendationService(delayed));
-            await coordinator.PlayTrackAsync(Track("original")); coordinator.ToggleAutoplay();
+            await coordinator.PlayTrackAsync(Track("original")); await coordinator.ToggleAutoplay();
             await player.OnAudioEvent(js.Module.Version, "playing", 90, 100);
             await delayed.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
             Check(player.Status == PlaybackStatus.Playing, "Autoplay prefetch starts before last track ends");
@@ -101,13 +101,26 @@ internal static class PlaybackChecks
         var js = new TestJS(); await player.InitializeAsync(js);
         var queue = new QueueService();
         using var coordinator = new PlaybackCoordinator(queue, player, new RecommendationService(new RecommendationProvider()));
-        await coordinator.PlayTrackAsync(Track("one")); coordinator.ToggleAutoplay();
+        await coordinator.PlayTrackAsync(Track("one")); await coordinator.ToggleAutoplay();
         await player.OnAudioEvent(js.Module.Version, "playing", 90, 100);
         Check(coordinator.Notice == "Próxima recomendação pronta." && queue.Entries.Count == 1, "Prefetch keeps recommendation outside manual queue until needed");
-        coordinator.ToggleAutoplay();
+        await coordinator.ToggleAutoplay();
         await player.OnAudioEvent(js.Module.Version, "ended", 100, 100);
         Check(player.CurrentTrack?.Id == "one" && player.Status == PlaybackStatus.Ended && queue.Entries.Count == 1,
             "Disabling autoplay discards completed prefetch before track end");
+    }
+    public static async Task ContinueAfterEndAsync()
+    {
+        var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(new byte[10])));
+        await using var proxy = new AudioProxy();
+        await using var player = new PlayerService(new TestAudio(resource), proxy);
+        var js = new TestJS(); await player.InitializeAsync(js);
+        var queue = new QueueService();
+        using var coordinator = new PlaybackCoordinator(queue, player, new RecommendationService(new RecommendationProvider()));
+        await coordinator.PlayTrackAsync(Track("one"));
+        await player.OnAudioEvent(js.Module.Version, "ended", 12, 12);
+        await coordinator.ToggleAutoplay();
+        Check(player.CurrentTrack?.Id == "recommended" || player.CurrentTrack?.Id == "two", "Enabling discovery after queue ended starts a recommendation immediately");
     }
     sealed class DelayedRecommendation : ITrackSearchProvider
     {

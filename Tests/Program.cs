@@ -77,6 +77,8 @@ await SoundCloudChecks.RunAsync();
 await SoundCloudWebChecks.RunAsync();
 await PlaybackChecks.RecommendationRaceChecksAsync();
 await PlaybackChecks.DisablePrefetchedAutoplayAsync();
+await PlaybackChecks.ContinueAfterEndAsync();
+await LibraryChecks.RunAsync();
 if (args.Contains("--native")) await NativeAudioChecks.RunAsync();
 if (args.Contains("--soundcloud"))
 {
