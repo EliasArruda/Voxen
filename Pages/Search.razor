@@ -4,7 +4,7 @@
 @inject MusicProviders Providers
 @inject Microsoft.Extensions.Logging.ILogger<SearchSession> Logger
 <div class="page-heading"><div><h1>Busca universal</h1><p class="page-description">Encontre músicas e artistas. Descubra seu próximo som.</p></div><span class="source-badge"><Icon Name="@(_source == TrackSource.YouTube ? "youtube" : "cloud")" Size="14" />@_source</span></div>
-<div class="source-selector" aria-label="Fonte da pesquisa"><button aria-pressed="@(_source == TrackSource.YouTube)" @onclick="() => ChangeSource(TrackSource.YouTube)"><Icon Name="youtube" Size="16" />YouTube</button><button disabled="@(!Providers.SoundCloudAvailable)" aria-pressed="@(_source == TrackSource.SoundCloud)" @onclick="() => ChangeSource(TrackSource.SoundCloud)"><Icon Name="cloud" Size="16" />SoundCloud @if (!Providers.SoundCloudAvailable) { <span>Sem credenciais</span> }</button></div>
+<div class="source-selector" aria-label="Fonte da pesquisa"><button aria-pressed="@(_source == TrackSource.YouTube)" @onclick="() => ChangeSource(TrackSource.YouTube)"><Icon Name="youtube" Size="16" />YouTube</button><button aria-pressed="@(_source == TrackSource.SoundCloud)" @onclick="() => ChangeSource(TrackSource.SoundCloud)"><Icon Name="cloud" Size="16" />SoundCloud @if (!Providers.SoundCloudOfficial) { <span>Integração pública</span> }</button></div>
 <SearchInput Value="@_input" ValueChanged="OnInput" />
 <section class="search-results" aria-busy="@(Session.Status is SearchStatus.Waiting or SearchStatus.Loading ? "true" : "false")">
     <div class="results-heading"><h2>Faixas encontradas</h2><span role="status" aria-live="polite">@StatusText</span></div>

@@ -17,3 +17,9 @@
 - CI executa build, checks, testes FFmpeg/SDL dummy e gera pacotes Linux/Windows. Execução gráfica Windows ainda não foi validada.
 - Biblioteca, favoritos, playlists persistidas, instaladores e personalização por UI são próximos incrementos. Tokens CSS estão documentados para evolução.
 - Não publicar releases nem alterar visibilidade/proteções sem pedido explícito.
+
+## 2026-10-06 — Public SoundCloud increment
+- Initial draft PR #1 merged after passing Linux/Windows CI, as explicitly requested.
+- Added bounded public website search/audio adapter, with discovered website client identity, six-hour in-memory cache and one refresh on 401/403. Official OAuth remains preferred when configured.
+- Public adapter rejects blocked/preview/unsupported encrypted formats; real public search and audio resolution passed without user credentials.
+- Fixture checks cover refresh, filtering and HLS normalization. Next: persisted library/history, personalized discovery, keyboard controls and README.

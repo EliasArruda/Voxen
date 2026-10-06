@@ -74,9 +74,21 @@ if (args.Contains("--youtube"))
 }
 await PlaybackChecks.RunAsync();
 await SoundCloudChecks.RunAsync();
+await SoundCloudWebChecks.RunAsync();
 await PlaybackChecks.RecommendationRaceChecksAsync();
 await PlaybackChecks.DisablePrefetchedAutoplayAsync();
 if (args.Contains("--native")) await NativeAudioChecks.RunAsync();
+if (args.Contains("--soundcloud"))
+{
+    using var publicSoundCloud = new SoundCloudWebService();
+    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+    var tracks = await publicSoundCloud.SearchAsync("lofi", timeout.Token);
+    Check(tracks.Count is > 0 and <= 20, "Live public SoundCloud search without credentials");
+    var resource = await publicSoundCloud.ResolveAsync(tracks[0], timeout.Token);
+    await using var audio = await resource.OpenAsync(timeout.Token);
+    var bytes = new byte[4096];
+    Check(await audio.ReadAsync(bytes, timeout.Token) > 0, "Live public SoundCloud resolves readable audio");
+}
 Console.WriteLine("All checks passed.");
 
 sealed class FakeProvider(Func<string, CancellationToken, Task<IReadOnlyList<Track>>>? handler = null) : ITrackSearchProvider
