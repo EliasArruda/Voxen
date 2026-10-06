@@ -8,7 +8,7 @@
         {
             var track = Tracks[i];
             <li class="track-row" @key="LibraryService.Key(track)">
-                <button class="row-play icon-button" disabled="@(!Player.Ready)" aria-label="Reproduzir @track.Title" @onclick="() => Playback.PlayTrackAsync(track)"><Icon Name="play" Size="14" /></button>
+                <button class="row-play icon-button" @onmouseenter="() => Player.PrepareAsync(track)" @onfocus="() => Player.PrepareAsync(track)" disabled="@(!Player.Ready)" aria-label="Reproduzir @track.Title" @onclick="() => Playback.PlayTrackAsync(track)"><Icon Name="play" Size="14" /></button>
                 <div class="track-art" aria-hidden="true">
                     @if (!string.IsNullOrWhiteSpace(track.ThumbnailUrl))
                     { <img src="@track.ThumbnailUrl" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" /> }

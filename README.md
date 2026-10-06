@@ -17,7 +17,7 @@ Voxen reúne pesquisa, biblioteca e reprodução em uma interface de vidro azul.
 
 ## Recursos
 
-- **Duas fontes:** busca YouTube e integração pública do SoundCloud sem credenciais pessoais. API oficial do SoundCloud disponível como opção.
+- **Busca Todas:** YouTube e SoundCloud juntos, com resultados progressivos e filtros por fonte. Integração pública SoundCloud sem credenciais pessoais. API oficial do SoundCloud disponível como opção.
 - **Player nativo:** reprodução, pausa, anterior/próxima, avanço na faixa, volume e fila com até 200 entradas.
 - **Biblioteca local:** músicas salvas, favoritos e playlists que podem ser criadas, renomeadas, editadas e reproduzidas.
 - **Descobertas pessoais:** recomendações a partir dos artistas ouvidos, favoritos, frequência e recência, com motivos visíveis.
@@ -44,9 +44,17 @@ Os pacotes incluem .NET, SDL3 e FFmpeg. Precisam de sessão gráfica, saída de 
 
 ### Primeira música
 
-Abra **Buscar**, escolha a fonte e digite uma música ou artista. Clique em **Ouvir agora** ou no play da linha. Use **+** para montar a fila, o **coração** para favoritar e o **marcador** para salvar na biblioteca.
+Abra **Buscar**. A opção **Todas** combina as duas fontes; YouTube e SoundCloud continuam disponíveis separadamente. Explore as ideias musicais iniciais ou digite uma música ou artista. Clique em **Ouvir agora** ou no play da linha. Use **+** para montar a fila, o **coração** para favoritar e o **marcador** para salvar na biblioteca.
 
 Em **Biblioteca**, crie uma playlist. Escolha a coleção Salvas ou Favoritos, selecione a playlist de destino e adicione as faixas. **Ouvir coleção** adiciona as músicas à fila e inicia a primeira. Exclusão de playlist e limpeza de histórico pedem confirmação.
+
+### Início do áudio e atmosfera
+
+O destaque da busca, a próxima faixa da fila e a candidata de reprodução automática podem preparar o stream antes do clique. Focar ou passar o cursor no play de uma linha também prepara aquela faixa. A preparação guarda somente metadados e pequenos manifestos em memória por até 90 segundos, com no máximo oito entradas; não baixa a música inteira. Preparação e reprodução compartilham a resolução. URLs que falham são descartadas para a próxima tentativa.
+
+O limite de início é de 20 segundos, do clique ao primeiro áudio. Se a fonte não responder, o player encerra a tentativa e oferece repetir ou escolher outra faixa. A conexão e a duração dependem da fonte e da rede; os testes Linux de faixas já preparadas iniciaram em aproximadamente 100–252 ms.
+
+A capa da faixa colore suavemente o fundo através do vidro. Trocas de capa e chegada de resultados têm transições discretas; a preferência do sistema por movimento reduzido é respeitada.
 
 ## Como funcionam as recomendações
 
@@ -155,6 +163,7 @@ O script gera uma aplicação self-contained e inclui um build fixado de FFmpeg,
 | Blazor + PhotinoX | Interface na WebView nativa |
 | `SearchSession` | Debounce de 350 ms, cancelamento e proteção contra resultados antigos |
 | `MusicProviders` | Roteamento YouTube / SoundCloud oficial ou público |
+| `AudioPreparationService` | Preparação compartilhada e cache temporário de metadados |
 | `PlayerService` + `PlaybackCoordinator` | Estado, transporte, fila e continuação automática |
 | `NativeAudioService` | Um processo FFmpeg, PCM limitado e saída SDL3 |
 | `AudioProxy` | Stream atual, token de sessão e HTTP Range em loopback |

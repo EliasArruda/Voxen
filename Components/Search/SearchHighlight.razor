@@ -10,7 +10,14 @@
     <div class="highlight-copy"><span class="source-badge @(Track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(Track.Source == TrackSource.YouTube ? "youtube" : "cloud")" Size="13" />@Track.Source</span><h2 title="@Track.Title">@Track.Title</h2><p>@Track.Artist</p><button class="highlight-play" disabled="@(!Player.Ready)" @onclick="() => Playback.PlayTrackAsync(Track)"><Icon Name="play" Size="14" />Ouvir agora</button></div>
 </section>
 @code {
+    private string? _prepared;
     protected override void OnInitialized() => Player.Changed += Refresh;
+    protected override void OnParametersSet()
+    {
+        var key = LibraryService.Key(Track);
+        if (_prepared == key) return;
+        _prepared = key; _ = Player.PrepareAsync(Track);
+    }
     private void Refresh() => _ = InvokeAsync(StateHasChanged);
     public void Dispose() => Player.Changed -= Refresh;
     [Parameter, EditorRequired] public Track Track { get; set; } = default!;

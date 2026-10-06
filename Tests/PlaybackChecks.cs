@@ -122,6 +122,27 @@ internal static class PlaybackChecks
         await coordinator.ToggleAutoplay();
         Check(player.CurrentTrack?.Id == "recommended" || player.CurrentTrack?.Id == "two", "Enabling discovery after queue ended starts a recommendation immediately");
     }
+    public static async Task StartupDeadlineAsync()
+    {
+        var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream()));
+        await using var proxy = new AudioProxy();
+        var clock = new ManualTime();
+        await using var player = new PlayerService(new TestAudio(resource), proxy, clock: clock);
+        var js = new TestJS(); await player.InitializeAsync(js);
+        await player.PlayAsync(Track("stalled"));
+        var old = js.Module.Version;
+        clock.Advance(TimeSpan.FromSeconds(21));
+        var deadline = DateTime.UtcNow.AddSeconds(3);
+        while (player.Status != PlaybackStatus.Error || js.Module.Stops < 2) { if (DateTime.UtcNow > deadline) throw new Exception("Startup deadline did not expire"); await Task.Delay(10); }
+        Check(player.Status == PlaybackStatus.Error && js.Module.Stops >= 2, "End-to-end startup deadline stops backend after metadata resolves but audio stalls");
+        await player.OnAudioEvent(old, "playing", 1, 10);
+        Check(player.Status == PlaybackStatus.Error, "Late audio after startup expiry cannot revive failed load");
+        await player.ToggleAsync();
+        await player.OnAudioEvent(js.Module.Version, "playing", 1, 10);
+        clock.Advance(TimeSpan.FromSeconds(21));
+        await Task.Yield();
+        Check(player.Status == PlaybackStatus.Playing, "Successful playback cancels startup deadline");
+    }
     sealed class DelayedRecommendation : ITrackSearchProvider
     {
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -146,10 +167,11 @@ internal static class PlaybackChecks
     }
     sealed class TestModule : IJSObjectReference
     {
-        public long Version;
+        public long Version; public int Stops;
         public TaskCompletionSource? StopGate;
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
+            if (identifier == "stop") Stops++;
             if (identifier == "stop" && StopGate is { } gate) return new ValueTask<TValue>(WaitForStop<TValue>(gate.Task));
             if (identifier == "load") Version = (long)args![1]!;
             return ValueTask.FromResult(default(TValue)!);
