@@ -1,7 +1,10 @@
 @page "/search"
 @implements IDisposable
 @inject Func<SearchSession> CreateSession
-<div class="page-heading"><div><h1>Busca universal</h1><p class="page-description">Encontre músicas e artistas. Descubra seu próximo som.</p></div><span class="source-badge"><Icon Name="youtube" Size="14" />YouTube</span></div>
+@inject MusicProviders Providers
+@inject Microsoft.Extensions.Logging.ILogger<SearchSession> Logger
+<div class="page-heading"><div><h1>Busca universal</h1><p class="page-description">Encontre músicas e artistas. Descubra seu próximo som.</p></div><span class="source-badge"><Icon Name="@(_source == TrackSource.YouTube ? "youtube" : "cloud")" Size="14" />@_source</span></div>
+<div class="source-selector" aria-label="Fonte da pesquisa"><button aria-pressed="@(_source == TrackSource.YouTube)" @onclick="() => ChangeSource(TrackSource.YouTube)"><Icon Name="youtube" Size="16" />YouTube</button><button disabled="@(!Providers.SoundCloudAvailable)" aria-pressed="@(_source == TrackSource.SoundCloud)" @onclick="() => ChangeSource(TrackSource.SoundCloud)"><Icon Name="cloud" Size="16" />SoundCloud @if (!Providers.SoundCloudAvailable) { <span>Sem credenciais</span> }</button></div>
 <SearchInput Value="@_input" ValueChanged="OnInput" />
 <section class="search-results" aria-busy="@(Session.Status is SearchStatus.Waiting or SearchStatus.Loading ? "true" : "false")">
     <div class="results-heading"><h2>Faixas encontradas</h2><span role="status" aria-live="polite">@StatusText</span></div>
@@ -32,6 +35,14 @@
 </section>
 @code {
     [SupplyParameterFromQuery(Name = "q")] public string? InitialQuery { get; set; }
+    private TrackSource _source;
+    private async Task ChangeSource(TrackSource source)
+    {
+        if (_source == source) return;
+        Session.Changed -= OnChanged; Session.Dispose();
+        _source = source; Session = new SearchSession(Providers.Search(source), Logger); Session.Changed += OnChanged;
+        await Session.UpdateAsync(_input);
+    }
     private string? _previousInitialQuery;
     private SearchSession Session = default!;
     private string _input = string.Empty;
