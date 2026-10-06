@@ -1,0 +1,18 @@
+<div class="search-field">
+    <span class="search-glyph"><Icon Name="search" Size="19" /></span>
+    <label class="sr-only" for="music-search">Buscar músicas ou artistas</label>
+    <input id="music-search" type="search" placeholder="Buscar músicas ou artistas…"
+           value="@Value" @oninput="HandleInput" maxlength="200" autocomplete="off" spellcheck="false"
+           aria-describedby="search-hint" />
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <button type="button" class="clear-button" aria-label="Limpar pesquisa" @onclick="Clear"><Icon Name="close" Size="16" /></button>
+    }
+</div>
+<p id="search-hint" class="search-hint">Digite pelo menos 2 caracteres. A busca acontece automaticamente.</p>
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    private Task HandleInput(ChangeEventArgs args) => ValueChanged.InvokeAsync(args.Value?.ToString() ?? string.Empty);
+    private Task Clear() => ValueChanged.InvokeAsync(string.Empty);
+}

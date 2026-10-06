@@ -1,0 +1,71 @@
+@page "/search"
+@implements IDisposable
+@inject Func<SearchSession> CreateSession
+<div class="page-heading"><div><h1>Busca universal</h1><p class="page-description">Encontre músicas e artistas. Descubra seu próximo som.</p></div><span class="source-badge"><Icon Name="youtube" Size="14" />YouTube</span></div>
+<SearchInput Value="@_input" ValueChanged="OnInput" />
+<section class="search-results" aria-busy="@(Session.Status is SearchStatus.Waiting or SearchStatus.Loading ? "true" : "false")">
+    <div class="results-heading"><h2>Faixas encontradas</h2><span role="status" aria-live="polite">@StatusText</span></div>
+    @if (Session.Status is SearchStatus.Loading or SearchStatus.Waiting)
+    {
+        <div class="skeleton-list" aria-hidden="true">
+            @for (var i = 0; i < 5; i++)
+            { <div class="skeleton-row"><span class="skeleton-art"></span><span class="skeleton-text"></span></div> }
+        </div>
+    }
+    else if (Session.Status == SearchStatus.Error)
+    {
+        <div class="empty-state" role="alert"><h3>A busca encontrou um obstáculo.</h3><p>@Session.ErrorMessage</p><button class="secondary-button" @onclick="Retry">Tentar novamente</button></div>
+    }
+    else if (Session.Status == SearchStatus.Ready && Session.Results.Count > 0)
+    {
+        <SearchHighlight Track="@Session.Results[0]" />
+        <TrackResults Tracks="@Session.Results" />
+    }
+    else if (Session.Status == SearchStatus.Ready)
+    {
+        <div class="empty-state"><span class="empty-symbol"><Icon Name="search" Size="32" /></span><h3>Nenhum resultado por aqui.</h3><p>Tente outro título, nome de artista ou uma busca mais curta.</p></div>
+    }
+    else
+    {
+        <div class="empty-state"><span class="empty-symbol"><Icon Name="music" Size="32" /></span><h3>Qual som você quer encontrar?</h3><p>Busque pelo nome de uma música ou artista.<br />Experimente “Linkin Park” ou “jazz instrumental”.</p></div>
+    }
+</section>
+@code {
+    [SupplyParameterFromQuery(Name = "q")] public string? InitialQuery { get; set; }
+    private string? _previousInitialQuery;
+    private SearchSession Session = default!;
+    private string _input = string.Empty;
+    private bool _disposed;
+    protected override void OnInitialized()
+    {
+        Session = CreateSession();
+        Session.Changed += OnChanged;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (InitialQuery == _previousInitialQuery) return;
+        _previousInitialQuery = InitialQuery;
+        _input = (InitialQuery ?? string.Empty)[..Math.Min(InitialQuery?.Length ?? 0, 200)];
+        await Session.UpdateAsync(_input);
+    }
+    private Task OnInput(string value)
+    {
+        _input = value;
+        return Session.UpdateAsync(value);
+    }
+    private Task Retry() => Session.UpdateAsync(_input, retry: true);
+    private void OnChanged() { if (!_disposed) _ = InvokeAsync(StateHasChanged); }
+    private string StatusText => Session.Status switch
+    {
+        SearchStatus.Waiting => "Aguardando digitação…",
+        SearchStatus.Loading => "Buscando…",
+        SearchStatus.Ready => $"{Session.Results.Count} resultados",
+        _ => ""
+    };
+    public void Dispose()
+    {
+        _disposed = true;
+        Session.Changed -= OnChanged;
+        Session.Dispose();
+    }
+}
