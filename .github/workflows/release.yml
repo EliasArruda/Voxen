@@ -1,0 +1,74 @@
+name: Publish installers
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (for example 0.1.0)'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  packages:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            ffmpeg: ffmpeg
+          - os: windows-latest
+            rid: win-x64
+            ffmpeg: ffmpeg.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/cache@v4
+        with:
+          path: .runtime/downloads
+          key: ffmpeg-9.0-autobuild-2026-10-06-${{ matrix.rid }}
+      - run: python scripts/publish.py --rid ${{ matrix.rid }} --output artifacts/Voxen-${{ matrix.rid }}
+      - run: dotnet run --project Tests/Voxen.Checks.csproj -c Release -- --native
+        env:
+          SDL_AUDIODRIVER: dummy
+          VOXEN_FFMPEG_PATH: ${{ github.workspace }}/artifacts/Voxen-${{ matrix.rid }}/tools/ffmpeg/${{ matrix.ffmpeg }}
+      - run: python scripts/package.py --rid ${{ matrix.rid }} --version "$env:VOXEN_VERSION" --input artifacts/Voxen-${{ matrix.rid }} --output artifacts/release
+        shell: pwsh
+        env:
+          VOXEN_VERSION: ${{ inputs.version }}
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          VOXEN_VERSION: ${{ inputs.version }}
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:VOXEN_VERSION" packaging/windows.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.rid }}
+          path: artifacts/release/*
+  release:
+    needs: packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VOXEN_VERSION: ${{ inputs.version }}
+        run: |
+          cd release
+          sha256sum * > SHA256SUMS.txt
+          gh release create "v$VOXEN_VERSION" ./* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Voxen $VOXEN_VERSION" --notes-file ../packaging/release-notes.md
