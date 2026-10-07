@@ -2,11 +2,11 @@
 @inject LibraryService Library
 @inject PlaybackCoordinator Playback
 <div class="track-actions">
-    <button class="icon-button @(Library.IsFavorite(Track) ? "selected-action" : "")" aria-label="@(Library.IsFavorite(Track) ? $"Desfavoritar {Track.Title}" : $"Favoritar {Track.Title}")" aria-pressed="@(Library.IsFavorite(Track) ? "true" : "false")" @onclick="Favorite"><Icon Name="heart" Size="16" /></button>
-    <button class="icon-button @(Library.IsSaved(Track) ? "selected-action" : "")" aria-label="@(Library.IsSaved(Track) ? $"Remover {Track.Title} da biblioteca" : $"Salvar {Track.Title} na biblioteca")" aria-pressed="@(Library.IsSaved(Track) ? "true" : "false")" @onclick="Save"><Icon Name="bookmark" Size="16" /></button>
-    <button class="row-add icon-button" aria-label="Adicionar @Track.Title à fila" @onclick="() => Playback.Add(Track)"><Icon Name="plus" Size="17" /></button>
+    <button class="icon-button @(Library.IsFavorite(Track) ? "selected-action" : "")" aria-label="@(Library.IsFavorite(Track) ? T.Format("Desfavoritar {0}", Track.Title) : T.Format("Favoritar {0}", Track.Title))" aria-pressed="@(Library.IsFavorite(Track) ? "true" : "false")" @onclick="Favorite"><Icon Name="heart" Size="16" /></button>
+    <button class="icon-button @(Library.IsSaved(Track) ? "selected-action" : "")" aria-label="@(Library.IsSaved(Track) ? T.Format("Remover {0} da biblioteca", Track.Title) : T.Format("Salvar {0} na biblioteca", Track.Title))" aria-pressed="@(Library.IsSaved(Track) ? "true" : "false")" @onclick="Save"><Icon Name="bookmark" Size="16" /></button>
+    <button class="row-add icon-button" aria-label="@T.Format("Adicionar {0} à fila", Track.Title)" @onclick="() => Playback.Add(Track)"><Icon Name="plus" Size="17" /></button>
 </div>
-@if (_error is not null) { <span class="action-error" role="alert">@_error</span> }
+@if (_error is not null) { <span class="action-error" role="alert">@T[_error]</span> }
 @code {
     [Parameter, EditorRequired] public Track Track { get; set; } = default!;
     protected override void OnInitialized() => Library.Changed += Refresh;

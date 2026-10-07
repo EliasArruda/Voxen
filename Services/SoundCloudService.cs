@@ -52,7 +52,7 @@ public sealed class SoundCloudService : ITrackSearchProvider, IAudioSourceProvid
         if (query.Trim().Length < 2) return [];
         using var json = await GetJsonAsync($"https://api.soundcloud.com/tracks?q={Uri.EscapeDataString(query.Trim())}&access=playable&limit=20&linked_partitioning=true", cancellationToken);
         var collection = json.RootElement.ValueKind == JsonValueKind.Array ? json.RootElement : json.RootElement.GetProperty("collection");
-        return collection.EnumerateArray().Take(20).Select(item => new Track(
+        return collection.EnumerateArray().Where(MusicContentFilter.Allows).Take(20).Select(item => new Track(
             Text(item, "urn") ?? item.GetProperty("id").ToString(), Text(item, "title") ?? "Sem título",
             Text(item, "metadata_artist") ?? Text(item.GetProperty("user"), "username") ?? "SoundCloud",
             Text(item, "artwork_url") ?? Text(item.GetProperty("user"), "avatar_url") ?? "",

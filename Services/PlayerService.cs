@@ -2,7 +2,7 @@ using Microsoft.JSInterop;
 using Voxen.Models;
 namespace Voxen.Services;
 public enum PlaybackStatus { Idle, Loading, Playing, Paused, Ended, Error }
-public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy proxy, NativeAudioService? native = null, TimeSpan? startupTimeout = null, TimeProvider? clock = null) : IAsyncDisposable
+public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy proxy, NativeAudioService? native = null, TimeSpan? startupTimeout = null, TimeProvider? clock = null, AppPreferences? preferences = null) : IAsyncDisposable
 {
     private IJSObjectReference? _module;
     private DotNetObjectReference<PlayerService>? _reference;
@@ -32,6 +32,8 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     {
         if (Ready) return;
         _dispatch = dispatch;
+        if (preferences is not null) preferences.Changed += ApplyTone;
+        ApplyTone();
         if (native is not null)
         {
             try { await native.InitializeAsync(signal => dispatch is not null
@@ -43,8 +45,11 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         _module = await js.InvokeAsync<IJSObjectReference>("import", "./Scripts/audio.js");
         _reference = DotNetObjectReference.Create(this);
         await _module.InvokeVoidAsync("initialize", _reference, Volume);
+        await ApplyToneAsync();
         Changed?.Invoke();
     }
+    private void ApplyTone() { native?.SetTone(preferences?.Tone ?? new()); }
+    public async Task ApplyToneAsync() { ApplyTone(); if(_module is not null) await _module.InvokeVoidAsync("tone",preferences?.Tone ?? new AudioTone()); }
     public Task PlayAsync(Track track) => PlayCoreAsync(track, false);
     private async Task PlayCoreAsync(Track track, bool retry)
     {
@@ -169,6 +174,7 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     }
     public async ValueTask DisposeAsync()
     {
+        if (preferences is not null) preferences.Changed -= ApplyTone;
         _version++; CancelStartup(); _resolution?.Cancel();
         if (_module is not null)
         {

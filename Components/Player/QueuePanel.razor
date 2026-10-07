@@ -2,23 +2,32 @@
 @inject QueueService Queue
 @inject PlayerService Player
 @inject PlaybackCoordinator Playback
-<div class="inspector-art">@if (Player.CurrentTrack is { ThumbnailUrl.Length: > 0 } track) { <img src="@track.ThumbnailUrl" alt="" referrerpolicy="no-referrer" /> } else { <Icon Name="music" Size="46" /> }</div>
-<div class="inspector-copy"><h3>@(Player.CurrentTrack?.Title ?? "O que vamos ouvir?")</h3><p>@(Player.CurrentTrack?.Artist ?? "Encontre uma faixa e aperte play.")</p></div>
-<div class="queue-heading"><Icon Name="queue" Size="17" /><h2>Sua fila</h2><span>@Queue.Entries.Count</span><button class="icon-button" aria-label="Limpar fila" disabled="@(Queue.Entries.Count == 0)" @onclick="Playback.ClearAsync"><Icon Name="close" Size="14" /></button></div>
-@if (Queue.Entries.Count == 0) { <div class="queue-empty"><p>Um espaço para seus próximos sons.</p><small>Use + nos resultados para montar sua fila.</small></div> }
+@inject LibraryService Library
+<div class="now-playing-hero">
+    <header><h2 title="@Player.CurrentTrack?.Title">@(Player.CurrentTrack?.Title ?? T["Sua música"])</h2><button class="icon-button inspector-close" aria-label="@T["Fechar fila"]" @onclick="Close"><Icon Name="close" Size="17" /></button></header>
+    <div class="inspector-art">@if (Player.CurrentTrack is { ThumbnailUrl.Length: > 0 } track) { <img src="@track.ThumbnailUrl" alt="" referrerpolicy="no-referrer" /> } else { <Icon Name="music" Size="46" /> }</div>
+    <div class="inspector-copy"><div><h3>@(Player.CurrentTrack?.Title ?? T["O que vamos ouvir?"])</h3><p>@(Player.CurrentTrack?.Artist ?? T["Encontre uma faixa e aperte play."])</p></div>@if(Player.CurrentTrack is { } current) { <button class="icon-button save-current" aria-label="@(Library.IsSaved(current) ? T["Remover da biblioteca"] : T["Salvar na biblioteca"])" aria-pressed="@(Library.IsSaved(current)?"true":"false")" @onclick="()=>Save(current)"><Icon Name="@(Library.IsSaved(current)?"bookmark":"plus")" Size="22" /></button> }</div>
+    @if(Player.CurrentTrack is { } playing) { <a class="artist-link" href="@("/search?q="+Uri.EscapeDataString(playing.Artist))"><span>@T["Mais deste artista"]</span><strong>@playing.Artist</strong><Icon Name="arrow" Size="17" /></a><div class="track-details"><span>@T["Fonte"]</span><a href="@playing.Url" target="_blank" rel="noopener noreferrer" title="@playing.Source" aria-label="@T.Format("Abrir no {0}",playing.Source)"><Icon Name="@(playing.Source==TrackSource.SoundCloud?"cloud":"youtube")" Size="16" /><Icon Name="arrow" Size="12" /></a></div> }
+</div>
+@if(_error is not null) { <p class="queue-notice" role="alert">@T[_error]</p> }
+<div class="queue-heading"><Icon Name="queue" Size="17" /><h2>@T["Sua fila"]</h2><span>@Queue.Entries.Count</span><button class="icon-button" aria-label="@T["Limpar fila"]" disabled="@(Queue.Entries.Count == 0)" @onclick="Playback.ClearAsync"><Icon Name="close" Size="14" /></button></div>
+@if (Queue.Entries.Count == 0) { <div class="queue-empty"><p>@T["Um espaço para seus próximos sons."]</p><small>@T["Use + nos resultados para montar sua fila."]</small></div> }
 else
 {
-    <ol class="queue-list" aria-label="Faixas na fila">
+    <ol class="queue-list" aria-label="@T["Faixas na fila"]">
     @foreach (var entry in Queue.Entries)
     {
-        <li class="@(Queue.CurrentKey == entry.Key ? "current" : "")" @key="entry.Key"><button class="queue-track" disabled="@(!Player.Ready)" aria-label="Reproduzir @entry.Track.Title na fila" @onclick="() => Playback.PlayEntryAsync(entry.Key)"><Icon Name="@(Queue.CurrentKey == entry.Key ? "wave" : "music")" Size="16" /><span><strong>@entry.Track.Title</strong><small>@entry.Track.Artist</small></span></button><button class="icon-button" aria-label="Remover @entry.Track.Title da fila" @onclick="() => Playback.RemoveAsync(entry.Key)"><Icon Name="close" Size="14" /></button></li>
+        <li class="@(Queue.CurrentKey == entry.Key ? "current" : "")" @key="entry.Key"><button class="queue-track" disabled="@(!Player.Ready)" aria-label="@T.Format("Reproduzir {0} na fila", entry.Track.Title)" @onclick="() => Playback.PlayEntryAsync(entry.Key)"><Icon Name="@(Queue.CurrentKey == entry.Key ? "wave" : "music")" Size="16" /><span><strong>@entry.Track.Title</strong><small>@entry.Track.Artist</small></span></button><button class="icon-button" aria-label="@T.Format("Remover {0} da fila", entry.Track.Title)" @onclick="() => Playback.RemoveAsync(entry.Key)"><Icon Name="close" Size="14" /></button></li>
     }
     </ol>
 }
-<div class="autoplay-setting"><div><strong>Continuar descobrindo</strong><small>Recomendações ao terminar a fila</small></div><button class="toggle-switch" aria-label="Reprodução automática" aria-pressed="@(Playback.Autoplay ? "true" : "false")" @onclick="Playback.ToggleAutoplay"><span></span></button></div>
-@if (Playback.Notice is not null) { <p class="queue-notice" role="status">@Playback.Notice</p> }
+<div class="autoplay-setting"><div><strong>@T["Continuar descobrindo"]</strong><small>@T["Recomendações ao terminar a fila"]</small></div><button class="toggle-switch" aria-label="@T["Reprodução automática"]" aria-pressed="@(Playback.Autoplay ? "true" : "false")" @onclick="Playback.ToggleAutoplay"><span></span></button></div>
+@if (Playback.Notice is not null) { <p class="queue-notice" role="status">@T[Playback.Notice]</p> }
 @code {
-    protected override void OnInitialized() { Queue.Changed += Refresh; Player.Changed += Refresh; Playback.Changed += Refresh; }
+    [Parameter] public EventCallback Close { get;set; }
+    private string? _error;
+    private void Save(Track track) { try { Library.ToggleSaved(track);_error=null; } catch(InvalidOperationException e) { _error=e.Message; } }
+    protected override void OnInitialized() { Queue.Changed += Refresh; Player.Changed += Refresh; Playback.Changed += Refresh;Library.Changed+=Refresh; }
     private void Refresh() => _ = InvokeAsync(StateHasChanged);
-    public void Dispose() { Queue.Changed -= Refresh; Player.Changed -= Refresh; Playback.Changed -= Refresh; }
+    public void Dispose() { Queue.Changed -= Refresh; Player.Changed -= Refresh; Playback.Changed -= Refresh;Library.Changed-=Refresh; }
 }

@@ -1,4 +1,7 @@
-@implements IDisposable
+@implements IAsyncDisposable
+@inject AppPreferences Preferences
+@inject CoverPaletteService Palettes
+@inject Microsoft.JSInterop.IJSRuntime JS
 @inject PlayerService Player
 <div class="track-atmosphere @(_ready ? "is-ready" : "")" aria-hidden="true">
     @if (_previous is not null) { <img class="atmosphere-previous" src="@_previous" alt="" referrerpolicy="no-referrer" /> }
@@ -7,7 +10,21 @@
 @code {
     private string? _current, _previous;
     private bool _ready, _disposed;
-    protected override void OnInitialized() { Player.Changed += Changed; Update(); }
+    private Microsoft.JSInterop.IJSObjectReference? _appearance;
+    private CancellationTokenSource? _paletteRequest;
+    private CoverPalette? _palette;
+    protected override void OnInitialized() { Player.Changed += Changed; Preferences.Changed += PreferencesChanged; Update(); }
+    protected override async Task OnAfterRenderAsync(bool firstRender) { if(firstRender) { _appearance=await JS.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>("import","./Scripts/appearance.js"); await RefreshPalette(); } }
+    private void PreferencesChanged() => _ = InvokeAsync(ApplyPalette);
+    private async Task ApplyPalette() { if(!_disposed && _appearance is not null) await _appearance.InvokeVoidAsync("applyPalette",Preferences.Data.CoverColors ? _palette : null,Preferences.Data.Language,Preferences.Data.CoverColors); }
+    private async Task RefreshPalette()
+    {
+        _paletteRequest?.Cancel();var request=new CancellationTokenSource();_paletteRequest=request;
+        _palette=null;await ApplyPalette();
+        try { if(_current is not null) { var palette=await Palettes.ExtractAsync(_current,request.Token); if(!request.IsCancellationRequested) { _palette=palette;await ApplyPalette(); } } }
+        catch(Exception e) when(e is OperationCanceledException or System.Net.Http.HttpRequestException or System.IO.IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { }
+        finally { if(_paletteRequest==request)_paletteRequest=null;request.Dispose(); }
+    }
     private bool Update()
     {
         var image = Player.CurrentTrack?.ThumbnailUrl;
@@ -17,8 +34,8 @@
         if (_current is null) _previous = null;
         return true;
     }
-    private void Changed() { if (!_disposed) _ = InvokeAsync(() => { if (Update()) StateHasChanged(); }); }
+    private void Changed() { if (!_disposed) _ = InvokeAsync(() => { if (Update()) { StateHasChanged(); _ = RefreshPalette(); } }); }
     private void Loaded(string? image) { if (image == _current) _ready = true; }
     private void Failed(string? image) { if (image == _current) { _previous = null; _ready = false; } }
-    public void Dispose() { _disposed = true; Player.Changed -= Changed; }
+    public async ValueTask DisposeAsync() { _disposed = true; Player.Changed -= Changed;Preferences.Changed-=PreferencesChanged;_paletteRequest?.Cancel();if(_appearance is not null) { try { await _appearance.DisposeAsync(); } catch(JSDisconnectedException) { } } }
 }

@@ -3,12 +3,12 @@
 @inject Func<SearchSession> CreateSession
 @inject MusicProviders Providers
 @inject Microsoft.Extensions.Logging.ILogger<SearchSession> Logger
-<div class="page-heading"><div><h1>Busca universal</h1><p class="page-description">Encontre músicas e artistas. Descubra seu próximo som.</p></div><span role="img" title="@SourceLabel" aria-label="@SourceLabel" class="source-badge @(_source is null ? "all-sources" : _source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(_source is null ? "search" : _source == TrackSource.YouTube ? "youtube" : "cloud")" Size="14" /></span></div>
-<div class="source-selector" aria-label="Fonte da pesquisa"><button aria-pressed="@(_source is null ? "true" : "false")" @onclick="() => ChangeSource(null)">Todos</button><button aria-pressed="@(_source == TrackSource.YouTube ? "true" : "false")" @onclick="() => ChangeSource(TrackSource.YouTube)">Youtube</button><button aria-pressed="@(_source == TrackSource.SoundCloud ? "true" : "false")" @onclick="() => ChangeSource(TrackSource.SoundCloud)">Soundcloud</button></div>
+<div class="page-heading"><div><h1>@T["Busca universal"]</h1><p class="page-description">@T["Encontre músicas e artistas. Descubra seu próximo som."]</p></div><span role="img" title="@SourceLabel" aria-label="@SourceLabel" class="source-badge @(_source is null ? "all-sources" : _source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(_source is null ? "search" : _source == TrackSource.YouTube ? "youtube" : "cloud")" Size="14" /></span></div>
+<div class="source-selector" aria-label="@T["Fonte da pesquisa"]"><button aria-pressed="@(_source is null ? "true" : "false")" @onclick="() => ChangeSource(null)"><Icon Name="music" Size="16" />@T["Todos"]</button><button aria-pressed="@(_source == TrackSource.YouTube ? "true" : "false")" @onclick="() => ChangeSource(TrackSource.YouTube)"><Icon Name="youtube" Size="16" />Youtube</button><button aria-pressed="@(_source == TrackSource.SoundCloud ? "true" : "false")" @onclick="() => ChangeSource(TrackSource.SoundCloud)"><Icon Name="cloud" Size="16" />Soundcloud</button></div>
 <SearchInput Value="@_input" ValueChanged="OnInput" />
 <section class="search-results" aria-busy="@(Session.Status is SearchStatus.Waiting or SearchStatus.Loading ? "true" : "false")">
-    @if (Session.Status != SearchStatus.Idle) { <div class="results-heading"><h2>Faixas encontradas</h2><span role="status" aria-live="polite">@StatusText</span></div> }
-    @if (Session.Notice is not null) { <p class="inline-notice" role="status">@Session.Notice</p> }
+    @if (Session.Status != SearchStatus.Idle) { <div class="results-heading"><h2>@T["Faixas encontradas"]</h2><span role="status" aria-live="polite">@StatusText</span></div> }
+    @if (Session.Notice is not null) { <p class="inline-notice" role="status">@T[Session.Notice]</p> }
     @if (Session.Status is SearchStatus.Loading or SearchStatus.Waiting && Session.Results.Count == 0)
     {
         <div class="skeleton-list" aria-hidden="true">
@@ -18,7 +18,7 @@
     }
     else if (Session.Status == SearchStatus.Error)
     {
-        <div class="empty-state" role="alert"><h3>A busca encontrou um obstáculo.</h3><p>@Session.ErrorMessage</p><button class="secondary-button" @onclick="Retry">Tentar novamente</button></div>
+        <div class="empty-state" role="alert"><h3>@T["A busca encontrou um obstáculo."]</h3><p>@T[Session.ErrorMessage]</p><button class="secondary-button" @onclick="Retry">@T["Tentar novamente"]</button></div>
     }
     else if (Session.Results.Count > 0)
     {
@@ -27,7 +27,7 @@
     }
     else if (Session.Status == SearchStatus.Ready)
     {
-        <div class="empty-state"><span class="empty-symbol"><Icon Name="search" Size="32" /></span><h3>Nenhum resultado por aqui.</h3><p>Tente outro título, nome de artista ou uma busca mais curta.</p></div>
+        <div class="empty-state"><span class="empty-symbol"><Icon Name="search" Size="32" /></span><h3>@T["Nenhum resultado por aqui."]</h3><p>@T["Tente outro título, nome de artista ou uma busca mais curta."]</p></div>
     }
     else
     {
@@ -37,7 +37,7 @@
 @code {
     [SupplyParameterFromQuery(Name = "q")] public string? InitialQuery { get; set; }
     private TrackSource? _source;
-    private string SourceLabel => _source?.ToString() ?? "Todas as fontes";
+    private string SourceLabel => _source?.ToString() ?? T["Todas as fontes"];
     private async Task ChangeSource(TrackSource? source)
     {
         if (_source == source) return;
@@ -70,9 +70,9 @@
     private void OnChanged() { if (!_disposed) _ = InvokeAsync(StateHasChanged); }
     private string StatusText => Session.Status switch
     {
-        SearchStatus.Waiting => "Aguardando digitação…",
-        SearchStatus.Loading => Session.Results.Count > 0 ? $"{Session.Results.Count} resultados · buscando na outra fonte…" : "Buscando…",
-        SearchStatus.Ready => $"{Session.Results.Count} resultados",
+        SearchStatus.Waiting => T["Aguardando digitação…"],
+        SearchStatus.Loading => Session.Results.Count > 0 ? T.Format("{0} resultados · buscando na outra fonte…",Session.Results.Count) : T["Buscando…"],
+        SearchStatus.Ready => T.Format("{0} resultados",Session.Results.Count),
         _ => ""
     };
     public void Dispose()

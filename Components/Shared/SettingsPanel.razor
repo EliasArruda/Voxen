@@ -1,0 +1,23 @@
+@inject AppPreferences Preferences
+@inject PlayerService Player
+<section class="settings-panel" aria-labelledby="settings-title">
+    <header class="settings-heading"><div><h1 id="settings-title">@T["Configurações"]</h1><p>@T["Seu idioma. Seu som. Seu ambiente."]</p></div></header>
+    <section class="settings-section"><h2>@T["Idioma"]</h2><label for="app-language">@T["Idioma da aplicação"]</label><select id="app-language" value="@Preferences.Data.Language" @onchange="Language"><option value="pt-BR">Português (Brasil)</option><option value="en">English</option><option value="es">Español</option></select></section>
+    <section class="settings-section"><h2>@T["Áudio"]</h2><p>@T["Ajuste o som enquanto a música toca."]</p><div class="tone-presets" role="group" aria-label="@T["Presets de áudio"]">
+        @foreach(var preset in Presets) { <button class="source-button @(Preferences.Data.Preset == preset.Id ? "active" : "")" aria-pressed="@(Preferences.Data.Preset == preset.Id ? "true" : "false")" @onclick="()=>Preset(preset.Id)">@T[preset.Label]</button> }
+    </div>
+    <div class="equalizer">
+        @foreach(var band in Bands) { <div class="eq-band"><label for="@("eq-"+band.Id)">@T[band.Label]<small>@band.Frequency</small></label><input id="@("eq-"+band.Id)" type="range" min="-12" max="12" step="1" value="@Gain(band.Id)" @oninput="e=>GainChanged(band.Id,e)" /><output for="@("eq-"+band.Id)">@Gain(band.Id).ToString("+0;-0;0") dB</output></div> }
+    </div><p class="settings-hint">@T["O equalizador reserva volume para evitar distorção nos boosts."]</p>
+    </section>
+    <section class="settings-section appearance-setting"><div><h2>@T["Cores da capa"]</h2><p>@T["Deixe cada música mudar a atmosfera do Voxen."]</p></div><button class="toggle-switch" aria-label="@T["Cores da capa"]" aria-pressed="@(Preferences.Data.CoverColors ? "true" : "false")" @onclick="()=>Preferences.CoverColors(!Preferences.Data.CoverColors)"><span></span></button></section>
+    @if(Preferences.Error is not null) { <p role="alert">@T[Preferences.Error]</p> }
+</section>
+@code {
+    private static readonly (string Id,string Label)[] Presets = [("flat","Original"),("bass","Bass boost"),("voice","Voz"),("bright","Brilho")];
+    private static readonly (string Id,string Label,string Frequency)[] Bands = [("bass","Graves","100 Hz"),("mid","Médios","1 kHz"),("treble","Agudos","8 kHz")];
+    private void Language(ChangeEventArgs e)=>Preferences.Language(e.Value?.ToString()??"pt-BR");
+    private async Task Preset(string id) { Preferences.Preset(id);await Player.ApplyToneAsync(); }
+    private double Gain(string band)=>band switch { "bass"=>Preferences.Tone.Bass,"mid"=>Preferences.Tone.Mid,_=>Preferences.Tone.Treble };
+    private async Task GainChanged(string band,ChangeEventArgs e) { if(!double.TryParse(e.Value?.ToString(),out var value))return;var tone=Preferences.Tone;Preferences.Equalizer(band switch { "bass"=>tone with {Bass=value},"mid"=>tone with {Mid=value},_=>tone with {Treble=value} });await Player.ApplyToneAsync(); }
+}

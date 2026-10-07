@@ -66,7 +66,7 @@ Check(fake.Calls.Count == 0, "Disposal cancels debounce before provider call");
 
 if (args.Contains("--youtube"))
 {
-    var youtube = new YouTubeService(new YoutubeClient());
+    var youtube = new YouTubeService(new YoutubeClient(),new YouTubeMusicSearchService());
     using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(25));
     var tracks = await youtube.SearchAsync("Linkin Park Numb", timeout.Token);
     Check(tracks.Count is > 0 and <= YouTubeService.ResultLimit, "Live YouTube search returns bounded results");
@@ -75,6 +75,8 @@ if (args.Contains("--youtube"))
 await AudioPreparationChecks.RunAsync();
 await CombinedSearchChecks.RunAsync();
 await PlaybackChecks.StartupDeadlineAsync();
+PersonalizationChecks.Run();
+await MusicSearchNetworkChecks.RunAsync();
 await PlaybackChecks.RunAsync();
 await PlaybackChecks.ManualNextAndMuteAsync();
 await PlaybackChecks.EndDuringManualNextAsync();

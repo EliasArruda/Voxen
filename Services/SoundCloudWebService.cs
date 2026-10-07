@@ -69,7 +69,7 @@ public sealed class SoundCloudWebService : ITrackSearchProvider, IAudioSourcePro
     {
         if (query.Trim().Length < 2) return [];
         using var json = await ApiAsync($"https://api-v2.soundcloud.com/search/tracks?q={Uri.EscapeDataString(query.Trim())}&limit=20", cancellationToken);
-        return json.RootElement.GetProperty("collection").EnumerateArray().Where(Playable).Take(20).Select(Map).ToArray();
+        return json.RootElement.GetProperty("collection").EnumerateArray().Where(Playable).Where(MusicContentFilter.Allows).Take(20).Select(Map).ToArray();
     }
     private static bool Playable(JsonElement item) => Text(item, "policy") == "ALLOW"
         && item.TryGetProperty("streamable", out var streamable) && streamable.ValueKind == JsonValueKind.True

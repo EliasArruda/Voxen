@@ -37,6 +37,7 @@ jobs:
       - run: node Tests/audio.checks.mjs
       - run: node Tests/shortcuts.checks.mjs
       - run: node Tests/player-controls.checks.mjs
+      - run: node Tests/tone.checks.mjs
       - run: python scripts/publish.py --rid ${{ matrix.rid }} --output artifacts/Voxen-${{ matrix.rid }}
       - run: dotnet run --project Tests/Voxen.Checks.csproj --configuration Release -- --native
         env:
