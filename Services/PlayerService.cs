@@ -37,8 +37,8 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         if (native is not null)
         {
             try { await native.InitializeAsync(signal => dispatch is not null
-                ? dispatch(() => OnAudioEvent(signal.Version, signal.Type, signal.Position, signal.Duration))
-                : OnAudioEvent(signal.Version, signal.Type, signal.Position, signal.Duration)); await native.VolumeAsync(Volume); }
+                ? dispatch(() => OnNativeAudioEvent(signal))
+                : OnNativeAudioEvent(signal)); await native.VolumeAsync(Volume); }
             catch (Exception) { Status = PlaybackStatus.Error; Error = "Não foi possível iniciar o áudio nativo. Use o pacote portátil com FFmpeg ou configure VOXEN_FFMPEG_PATH."; }
             Changed?.Invoke(); return;
         }
@@ -67,12 +67,14 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         IsSeeking = false; CurrentTrack = track; Status = PlaybackStatus.Loading; Error = null; Position = Duration = 0;
         Changed?.Invoke();
         _ = WatchStartupAsync(version, budget, _startup.Token);
+        var stage = "source";
         try
         {
             if (native is not null) await native.StopAsync(version); else await _module!.InvokeVoidAsync("stop", version);
             var resource = await provider.ResolveAsync(track, resolution.Token);
             resolution.Token.ThrowIfCancellationRequested();
             if (version != _version) return;
+            stage = "decoder";
             LoadingMessage = "Iniciando áudio…"; Changed?.Invoke();
             var url = await proxy.PublishAsync(resource, version, resolution.Token);
             if (version != _version) return;
@@ -83,6 +85,14 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         catch (Exception) when (version != _version) { }
         catch (Exception exception) when (version == _version)
         {
+            PlaybackDiagnostics.Record(track.Source, stage, exception, retry);
+            if (stage == "source" && !retry && exception is HttpRequestException { StatusCode: System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.Unauthorized }
+                && _clock.GetElapsedTime(_startupStarted) < _startupTimeout)
+            {
+                if (provider is AudioPreparationService stale) stale.Invalidate(track);
+                await PlayCoreAsync(track, true);
+                return;
+            }
             CancelStartup();
             if (provider is AudioPreparationService preparation) preparation.Invalidate(track);
             Status = PlaybackStatus.Error;
@@ -128,6 +138,17 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         Changed?.Invoke();
     }
     public Task ToggleMuteAsync() => SetVolumeAsync(Volume > 0 ? 0 : _restoreVolume);
+    private async Task OnNativeAudioEvent(AudioSignal signal)
+    {
+        if(signal.Version == _version && signal.Type == "error" && CurrentTrack is { } track)
+        {
+            Exception error = signal.FailureStatus is { } status
+                ? new HttpRequestException(null, null, (System.Net.HttpStatusCode)status)
+                : new IOException();
+            PlaybackDiagnostics.Record(track.Source, "decoder", error, !_retryAvailable);
+        }
+        await OnAudioEvent(signal.Version, signal.Type, signal.Position, signal.Duration);
+    }
     [JSInvokable]
     public async Task OnAudioEvent(long version, string type, double position, double duration)
     {

@@ -19,7 +19,7 @@
 - **Make it yours.** Save tracks, mark favorites, create playlists, and revisit recently played music.
 - **Keep listening.** Build a queue, skip whenever you like, and enable *Keep discovering* for recommendations based on your listening and favorites.
 - **Shape your sound.** Choose Original, Bass boost, Voice, or Brightness, or adjust bass, midrange, and treble yourself.
-- **Set the mood.** Artwork colors adapt the backgrounds, panels, controls, and text while you listen. Turn them off to return to Summer Sky.
+- **Set the mood.** Artwork colors adapt the entire layout, including the sidebar and player controls. The Linux desktop canvas is transparent. Turn them off to restore the original blue glass.
 - **Choose your language.** Portuguese, English, and Spanish are available in Settings.
 
 ## Start listening

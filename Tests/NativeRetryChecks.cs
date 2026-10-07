@@ -33,7 +33,7 @@ internal static class NativeRetryChecks
                 if (DateTime.UtcNow > deadline) throw new TimeoutException("Startup recovery did not finish");
                 await Task.Delay(25);
             }
-            if (source.Calls != 2 || player.Status != (recover ? PlaybackStatus.Playing : PlaybackStatus.Error))
+            if (source.Invalidations == 0 || source.Calls != 2 || player.Status != (recover ? PlaybackStatus.Playing : PlaybackStatus.Error))
                 throw new Exception("Startup must refresh metadata once and never retry forever");
             await player.StopAsync();
         }
@@ -67,15 +67,47 @@ internal static class NativeRetryChecks
             else await player.StopAsync();
             gate.SetResult();
             await Task.Delay(150);
-            if (source.Calls != 2 || player.Status != (expire ? PlaybackStatus.Error : PlaybackStatus.Idle))
+            if (source.Invalidations == 0 || source.Calls != 2 || player.Status != (expire ? PlaybackStatus.Error : PlaybackStatus.Idle))
                 throw new Exception("Late retry cannot restart playback after timeout or stop");
         }
+        foreach (var recover in new[] { true, false })
+        {
+            var access = new AccessSource(wav.ToArray(), recover);
+            using var preparation = new AudioPreparationService(access);
+            await using var proxy = new AudioProxy();
+            await using var native = new NativeAudioService();
+            await using var player = new PlayerService(preparation, proxy, native);
+            await player.InitializeAsync(new NoBrowser());
+            await player.PlayAsync(new("denied", "Track", "Artist", "", TimeSpan.FromSeconds(3), TrackSource.YouTube, "https://youtube.com"));
+            var deadline = DateTime.UtcNow.AddSeconds(8);
+            while (player.Status == PlaybackStatus.Loading && DateTime.UtcNow < deadline) await Task.Delay(50);
+            if (access.Calls != 2 || player.Status != (recover ? PlaybackStatus.Playing : PlaybackStatus.Error))
+                throw new Exception("Denied metadata must refresh once and never loop");
+            await player.StopAsync();
+        }
+        Console.WriteLine("PASS Denied source metadata refreshes once, recovers valid audio, and stops after a second denial");
+        if(NativeAudioService.FailureStatus("HTTP error 403 Forbidden https://signed.example?secret=hidden") != 403 || NativeAudioService.FailureStatus("decoder failure 403 bytes") is not null)
+            throw new Exception("Native diagnostics must identify an HTTP status without retaining raw stderr");
+        Console.WriteLine("PASS Native diagnostics classify HTTP denial without exposing decoder URLs");
         Console.WriteLine("PASS Native startup refreshes stale metadata once; second failure stops retrying");
         Console.WriteLine("PASS Retry preserves original startup deadline; timeout and stop reject late metadata");
     }
-    private sealed class Source(byte[] bytes, bool recover) : IAudioSourceProvider
+    private sealed class AccessSource(byte[] bytes, bool recover) : IAudioSourceProvider
     {
         public int Calls;
+        public Task<AudioResource> ResolveAsync(Track track, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if (Interlocked.Increment(ref Calls) == 1 || !recover)
+                throw new HttpRequestException("Denied fixture", null, System.Net.HttpStatusCode.Forbidden);
+            return Task.FromResult(new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(bytes))));
+        }
+    }
+    private sealed class Source(byte[] bytes, bool recover) : IAudioSourceProvider, IAudioSourceInvalidation
+    {
+        public int Calls;
+        public int Invalidations;
+        public void Invalidate(Track track) => Invalidations++;
         public Task? PendingRetry;
         public Action? FirstPrepared;
         public async Task<AudioResource> ResolveAsync(Track track, CancellationToken token)

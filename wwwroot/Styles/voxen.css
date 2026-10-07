@@ -706,3 +706,23 @@ input { caret-color:var(--primary); }
 
 .settings-trigger svg { width:19px;height:19px;flex-shrink:0; }
 @media(max-width:700px) { .settings-trigger { padding:8px;min-width:36px;min-height:36px; }.settings-trigger span { display:none; }.global-search { max-width:calc(100% - 132px); }.topbar-actions { margin-left:auto; } }
+
+/* Transparent canvas; every application surface follows the cover palette. */
+html,body { background:transparent; }
+html[data-album-theme] body { background:transparent; }
+:root { --soundcloud:#ffbc55; background:transparent; }
+.track-atmosphere { background:transparent; }
+html[data-album-theme] .track-atmosphere { background:var(--album-tint);opacity:1; }
+html[data-album-theme] .track-atmosphere .atmosphere-current.is-ready,html[data-album-theme] .track-atmosphere .atmosphere-previous { opacity:.12; }
+html[data-album-theme] .sidebar,html[data-album-theme] .topbar,html[data-album-theme] .player-dock,html[data-album-theme] .right-inspector,html[data-album-theme] main { color:var(--ink);background:var(--surface);border-color:var(--line); }
+html[data-album-theme] .sidebar .brand-symbol,html[data-album-theme] .sidebar nav a.active,html[data-album-theme] .library-shortcut,html[data-album-theme] .source-badge,html[data-album-theme] .soundcloud-badge { color:var(--primary);background:var(--selected);border-color:var(--line); }
+html[data-album-theme] .soundcloud-icon { color:var(--soundcloud); }
+html[data-album-theme] .source-badge { color:var(--youtube); }
+html[data-album-theme] .play-button,html[data-album-theme] .primary-button,html[data-album-theme] .highlight-play { background:var(--primary);color:var(--bg); }
+html[data-album-theme] .transport-buttons .icon-button,html[data-album-theme] .dock-track small,html[data-album-theme] .volume-control,html[data-album-theme] .dock-timeline { color:var(--muted); }
+html[data-album-theme] .error-notice { background:var(--raised);color:var(--ink);border-color:var(--primary); }
+html[data-album-theme] input[type="range"] { accent-color:var(--primary); }
+
+html[data-album-theme] .dock-timeline input::-webkit-slider-runnable-track { background:linear-gradient(to right,var(--primary) 0%,var(--primary) var(--progress),var(--line) var(--progress),var(--line) 100%); }
+html[data-album-theme] .dock-timeline input::-moz-range-track { background:var(--line); }
+html[data-album-theme] .dock-timeline input::-moz-range-progress { background:var(--primary); }

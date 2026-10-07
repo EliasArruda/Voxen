@@ -42,6 +42,7 @@ builder.ConfigureMainWindow(window =>
     window
         .SetTitle("Voxen")
         .SetSize(1280, 800)
+        .SetTransparent(!OperatingSystem.IsWindows())
         .Center();
 });
 

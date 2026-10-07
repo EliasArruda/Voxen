@@ -12,7 +12,7 @@ Find and play music quickly while keeping metadata, queue and network requests b
 
 ## Design direction
 User selected SpicetifyCat Summer Sky as the replacement visual reference, retaining frosted glass and rounded forms.
-Illustrated summer sky, translucent blue surfaces, soft peach accent, local Geist/Inter typography, slim icon navigation, centered search shortcut, compact track rows, responsive queue inspector and persistent player.
+Illustrated summer sky, translucent blue surfaces, soft peach accent, local Roboto typography, slim icon navigation, centered search shortcut, compact track rows, responsive queue inspector and persistent player.
 See `.impeccable/surfaces/studio.md` for the direction contract.
 
 ## Principles

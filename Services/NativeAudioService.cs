@@ -5,7 +5,7 @@ using System.Threading.Channels;
 using SDL;
 namespace Voxen.Services;
 
-public sealed record AudioSignal(long Version, string Type, double Position, double Duration);
+public sealed record AudioSignal(long Version, string Type, double Position, double Duration, int? FailureStatus = null);
 // FFmpeg decodes a bounded PCM pipe; SDL's bundled native runtime sends it to the OS audio device.
 public sealed class NativeAudioService : IAsyncDisposable
 {
@@ -132,8 +132,8 @@ public sealed class NativeAudioService : IAsyncDisposable
                 if (!started) { started = true; if (!_paused) { ResumeDevice(); Emit("playing"); } else Emit("pause"); }
                 if (lastReport.ElapsedMilliseconds >= 250) { Emit("time"); lastReport.Restart(); }
             }
-            await process.WaitForExitAsync(token); await errors;
-            if (process.ExitCode != 0 || !started) { Emit("error"); return; }
+            await process.WaitForExitAsync(token); var diagnostic = await errors;
+            if (process.ExitCode != 0 || !started) { Emit("error", FailureStatus(diagnostic)); return; }
             _duration = _start + (double)_written / BytesPerSecond;
             FlushDevice();
             while (Queued() > 0) { if (lastReport.ElapsedMilliseconds >= 250) { Emit("time"); lastReport.Restart(); } await Task.Delay(30, token); }
@@ -143,9 +143,14 @@ public sealed class NativeAudioService : IAsyncDisposable
         catch (Exception) { if (!token.IsCancellationRequested) Emit("error"); }
         finally { pinned.Free(); if (!process.HasExited) process.Kill(entireProcessTree: true); try { await errors; } catch (OperationCanceledException) { } }
     }
-    private void Emit(string type)
+    public static int? FailureStatus(string diagnostic)
     {
-        var signal = new AudioSignal(_version, type, Math.Max(_start, _start + (double)(_written - Queued()) / BytesPerSecond), _duration);
+        var match=System.Text.RegularExpressions.Regex.Match(diagnostic,@"\b(?:HTTP error|Server returned)\s+(401|403|404|410)\b",System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return match.Success ? int.Parse(match.Groups[1].Value,System.Globalization.CultureInfo.InvariantCulture) : null;
+    }
+    private void Emit(string type, int? failureStatus = null)
+    {
+        var signal = new AudioSignal(_version, type, Math.Max(_start, _start + (double)(_written - Queued()) / BytesPerSecond), _duration, failureStatus);
         if (type == "time")
         {
             Volatile.Write(ref _latestTime, signal);

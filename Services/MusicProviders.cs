@@ -1,7 +1,8 @@
 using Voxen.Models;
 namespace Voxen.Services;
-public sealed class MusicProviders(YouTubeService youtube, SoundCloudService soundCloud, SoundCloudWebService publicSoundCloud) : IStreamingTrackSearchProvider, IAudioSourceProvider
+public sealed class MusicProviders(YouTubeService youtube, SoundCloudService soundCloud, SoundCloudWebService publicSoundCloud) : IStreamingTrackSearchProvider, IAudioSourceProvider, IAudioSourceInvalidation
 {
+    public void Invalidate(Track track) { if(track.Source == TrackSource.YouTube) youtube.Invalidate(track); }
     public bool SoundCloudAvailable => true;
     public bool SoundCloudOfficial => soundCloud.IsConfigured;
     private CombinedSearchProvider Combined => new(youtube, soundCloud.IsConfigured ? soundCloud : publicSoundCloud);

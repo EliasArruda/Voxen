@@ -3,7 +3,7 @@ namespace Voxen.Services;
 
 /// <summary>Short-lived stream metadata, never audio files. Concurrent prepare/play requests share one resolution.</summary>
 public sealed class AudioPreparationService(IAudioSourceProvider provider, TimeProvider? clock = null,
-    TimeSpan? lifetime = null, TimeSpan? preparationTimeout = null) : IAudioSourceProvider, IDisposable
+    TimeSpan? lifetime = null, TimeSpan? preparationTimeout = null) : IAudioSourceProvider, IAudioSourceInvalidation, IDisposable
 {
     private sealed record Entry(Task<AudioResource> Task, DateTimeOffset Expires, CancellationTokenSource Deadline);
     private readonly object _gate = new();
@@ -60,7 +60,7 @@ public sealed class AudioPreparationService(IAudioSourceProvider provider, TimeP
             return entry;
         }
     }
-    public void Invalidate(Track track) { lock (_gate) RemoveCore(Key(track)); }
+    public void Invalidate(Track track) { lock (_gate) RemoveCore(Key(track)); if(provider is IAudioSourceInvalidation source) source.Invalidate(track); }
     private void Remove(string key, Entry entry)
     { lock (_gate) { if (_entries.TryGetValue(key, out var current) && ReferenceEquals(current, entry)) RemoveCore(key); } }
     private void RemoveCore(string key)
