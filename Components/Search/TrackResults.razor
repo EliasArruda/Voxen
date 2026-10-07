@@ -16,7 +16,7 @@
                 </div>
                 <div class="track-info"><h3 title="@track.Title">@track.Title</h3><p>@track.Artist</p></div>
                 <span class="track-artist" title="@track.Artist">@track.Artist</span>
-                <span class="source-badge @(track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(track.Source == TrackSource.SoundCloud ? "cloud" : "youtube")" Size="13" />@track.Source</span>
+                <span role="img" title="@track.Source" aria-label="@track.Source" class="source-badge @(track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(track.Source == TrackSource.SoundCloud ? "cloud" : "youtube")" Size="13" /></span>
                 <span class="track-duration" aria-label="Duração">@FormatDuration(track.Duration)</span>
                 <TrackActions Track="track" />
             </li>

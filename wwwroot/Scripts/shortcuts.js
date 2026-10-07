@@ -1,5 +1,5 @@
 let reference, listener, focusObserver, focusTimer, helpTimer, helpReturn;
-const editing = target => !!target?.closest?.('input,textarea,select,[contenteditable="true"],[role="textbox"]');
+const editing = target => !!target?.closest?.('input:not([type="range"]),textarea,select,[contenteditable="true"],[role="textbox"]');
 export function actionFor(event) {
     if (event.defaultPrevented || event.isComposing || event.repeat) return null;
     const key = event.key.toLowerCase(), command = event.ctrlKey || event.metaKey;
@@ -10,8 +10,8 @@ export function actionFor(event) {
     if (command || event.altKey) return null;
     if (key === '?' || (key === '/' && event.shiftKey)) return 'help';
     if (event.shiftKey) return null;
-    if (key === ' ' && event.target?.closest?.('button,a,[role="button"]')) return null;
-    if (key.startsWith('arrow') && event.target?.closest?.('button,a,[role="button"]')) return null;
+    if (key === ' ') return 'toggle';
+    if (key.startsWith('arrow') && event.target?.closest?.('button,a,[role="button"],input[type="range"]')) return null;
     return ({' ': 'toggle', '/': 'search', n: 'next', p: 'previous', arrowright: 'forward', arrowleft: 'backward', arrowup: 'volumeup', arrowdown: 'volumedown', m: 'mute', f: 'favorite', b: 'save', q: 'queue'})[key] ?? null;
 }
 export function initialize(callback) {

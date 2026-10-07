@@ -33,7 +33,6 @@
     private Microsoft.JSInterop.IJSObjectReference? _module;
     private Microsoft.JSInterop.DotNetObjectReference<KeyboardShortcuts>? _reference;
     private bool _help, _focusHelp;
-    private double _previousVolume = .7;
     private string? _notice;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -69,7 +68,7 @@
                 case "backward": await Player.SeekAsync(Player.Position - 5); break;
                 case "volumeup": await Player.SetVolumeAsync(Player.Volume + .05); break;
                 case "volumedown": await Player.SetVolumeAsync(Player.Volume - .05); break;
-                case "mute": if (Player.Volume > 0) { _previousVolume = Player.Volume; await Player.SetVolumeAsync(0); } else await Player.SetVolumeAsync(_previousVolume); break;
+                case "mute": await Player.ToggleMuteAsync(); break;
                 case "favorite" when Player.CurrentTrack is { } track: Library.ToggleFavorite(track); break;
                 case "save" when Player.CurrentTrack is { } saved: Library.ToggleSaved(saved); break;
                 case "queue": await QueueToggle.InvokeAsync(); break;

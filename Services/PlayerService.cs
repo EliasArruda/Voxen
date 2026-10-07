@@ -8,6 +8,8 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
     private DotNetObjectReference<PlayerService>? _reference;
     private CancellationTokenSource? _resolution;
     private long _version;
+    private double _restoreVolume = .7;
+    public long VolumeRevision { get; private set; }
     private bool _retryAvailable;
     private long _startupStarted;
     private readonly TimeProvider _clock = clock ?? TimeProvider.System;
@@ -110,13 +112,17 @@ public sealed class PlayerService(IAudioSourceProvider provider, AudioProxy prox
         }
         catch { IsSeeking = false; Changed?.Invoke(); throw; }
     }
-    public async Task SetVolumeAsync(double value)
+    public Task SetVolumeAsync(double value) { VolumeRevision++; return ApplyVolumeAsync(value); }
+    public Task SetVolumeFromControlAsync(double value, long revision) => revision == VolumeRevision ? ApplyVolumeAsync(value) : Task.CompletedTask;
+    private async Task ApplyVolumeAsync(double value)
     {
         Volume = Math.Clamp(value, 0, 1);
+        if (Volume > 0) _restoreVolume = Volume;
         if (native is not null && native.Ready) await native.VolumeAsync(Volume);
         else if (_module is not null) await _module.InvokeVoidAsync("volume", Volume);
         Changed?.Invoke();
     }
+    public Task ToggleMuteAsync() => SetVolumeAsync(Volume > 0 ? 0 : _restoreVolume);
     [JSInvokable]
     public async Task OnAudioEvent(long version, string type, double position, double duration)
     {

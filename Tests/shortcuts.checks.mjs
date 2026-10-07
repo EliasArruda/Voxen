@@ -10,7 +10,7 @@ assert.equal(actionFor(event('k',{metaKey:true})),'search');
 assert.equal(actionFor(event('l',{altKey:true})),'library');
 assert.equal(actionFor(event('?',{shiftKey:true})),'help');
 assert.equal(actionFor(event('f',{target:{closest:s=>s.startsWith('input')?{}:null}})),null);
-assert.equal(actionFor(event(' ',{target:{closest:s=>s.startsWith('button')?{}:null}})),null);
+assert.equal(actionFor(event(' ',{target:{closest:s=>s.startsWith('button')?{}:null}})),'toggle');
 assert.equal(actionFor(event('Escape',{target:{closest:s=>s.startsWith('input')?{}:null}})),null);
 assert.equal(actionFor(event('m',{isComposing:true})),null);
 assert.equal(actionFor(event('ArrowUp',{repeat:true})),null);

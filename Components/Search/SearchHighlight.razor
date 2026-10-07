@@ -7,7 +7,7 @@
         { <img src="@Track.ThumbnailUrl" alt="" decoding="async" referrerpolicy="no-referrer" /> }
         else { <Icon Name="music" Size="42" /> }
     </div>
-    <div class="highlight-copy"><span class="source-badge @(Track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(Track.Source == TrackSource.YouTube ? "youtube" : "cloud")" Size="13" />@Track.Source</span><h2 title="@Track.Title">@Track.Title</h2><p>@Track.Artist</p><button class="highlight-play" disabled="@(!Player.Ready)" @onclick="() => Playback.PlayTrackAsync(Track)"><Icon Name="play" Size="14" />Ouvir agora</button></div>
+    <div class="highlight-copy"><span role="img" title="@Track.Source" aria-label="@Track.Source" class="source-badge @(Track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(Track.Source == TrackSource.YouTube ? "youtube" : "cloud")" Size="13" /></span><h2 title="@Track.Title">@Track.Title</h2><p>@Track.Artist</p><button class="highlight-play" disabled="@(!Player.Ready)" @onclick="() => Playback.PlayTrackAsync(Track)"><Icon Name="play" Size="14" />Ouvir agora</button></div>
 </section>
 @code {
     private string? _prepared;
