@@ -171,3 +171,11 @@ Transições de fundo/cor/borda usam (160ms, ease-out). O link principal das ide
 The seek timeline uses a 4px peach filled track with a transparent 1px handle, preserving the native range input and keyboard semantics. Fill reflects playback position, replacing the rainbow track. Volume lives in a client-owned slider: playback rerenders do not overwrite its value during dragging or pending changes; updates are serialized and coalesced. Percent text has a fixed width to prevent layout jitter. The volume button and M share mute/restore state. Outside text fields, Space controls playback even with buttons or sliders focused; slider arrows retain native behavior. Route changes do not focus h1.
 
 Source badges contain only accessible, titled icons. SoundCloud uses the official Font Awesome brand silhouette in orange-yellow #ffbc55; regular/solid volume controls use Blazicons.FontAwesome. Search filters are plain labels Todos, Youtube, Soundcloud. The Summer Sky palette, shell, typography and layout remain unchanged.
+
+### Personalized listening
+
+Settings lives in the main content region, accessed by a gear in the topbar. It preserves the Summer Sky typography, round controls and glass surfaces. Language, three tone bands, four sound presets and a cover-color toggle form separate readable groups. Settings is a page-like surface, not a modal.
+
+The now-playing pane gives the real artwork and title priority, with save, source and artist-search actions. Artist metrics, biographies and credits are omitted when the provider does not supply them. Its memory point is the artwork changing the surrounding atmosphere: a sampled cover hue tints dark surfaces and a pale accent across controls. Text stays light for contrast. Turning cover colors off restores Summer Sky. Existing image crossfades respect reduced motion; no extra looping motion is introduced.
+
+Portuguese, English and Spanish share the same layout. Metadata such as song titles, artists and user playlist names stays in its original language. Search filters retain brand icons beside their names. YouTube search requests the Songs catalog rather than general videos; SoundCloud excludes explicit spoken-content metadata without claiming perfect classification.

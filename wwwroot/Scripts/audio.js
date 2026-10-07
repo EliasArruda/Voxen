@@ -4,6 +4,7 @@ function detach() {
     clearTimeout(loadingTimer);
     hls?.destroy(); hls = undefined;
     if (!audio) return;
+    sourceNode?.disconnect();for(const node of toneNodes)node.disconnect();toneNodes=[];sourceNode=undefined;
     const old = audio; audio = undefined;
     old.pause(); old.removeAttribute('src'); old.load();
 }
@@ -11,7 +12,8 @@ export function stop(nextVersion) { version = nextVersion; detach(); }
 export async function load(url, nextVersion, isHls = false) {
     detach(); version = nextVersion;
     const current = new Audio(); audio = current;
-    current.preload = 'metadata'; current.volume = level;
+    current.preload = 'metadata'; current.crossOrigin = 'anonymous'; current.volume = level;
+    attachTone(current);
     let lastUpdate = 0;
     const report = type => {
         if (audio !== current || version !== nextVersion) return;
@@ -49,6 +51,7 @@ export async function load(url, nextVersion, isHls = false) {
 export function pause() { audio?.pause(); }
 export function resume() {
     const current = audio, currentVersion = version;
+    if(context?.state==='suspended')void context.resume().catch(()=>{});
     current?.play().catch(() => {
         if (audio !== current || version !== currentVersion) return;
         callback.invokeMethodAsync('OnAudioEvent', currentVersion, 'error', current.currentTime || 0,
@@ -57,4 +60,25 @@ export function resume() {
 }
 export function seek(seconds) { if (audio && Number.isFinite(audio.duration)) audio.currentTime = seconds; }
 export function volume(value) { level = value; if (audio) audio.volume = value; }
-export function dispose() { version++; detach(); callback = undefined; }
+export function dispose() { version++; detach(); void context?.close();context=undefined; callback = undefined; }
+
+let toneSettings={bass:0,mid:0,treble:0}, context, sourceNode, toneNodes=[];
+export function tone(settings) {
+    toneSettings=settings;
+    if (!context) return;
+    const values=[settings.bass,settings.mid,settings.treble];
+    for(let i=0;i<3;i++)toneNodes[i]?.gain.setTargetAtTime(values[i],context.currentTime,.04);
+    const headroom=Math.pow(10,-values.reduce((sum,gain)=>sum+Math.max(0,gain),0)/20);
+    toneNodes[3]?.gain.setTargetAtTime(headroom,context.currentTime,.04);
+}
+function attachTone(current) {
+    const AudioContext=globalThis.AudioContext || globalThis.webkitAudioContext;
+    if (!AudioContext) return;
+    context ||= new AudioContext();sourceNode=context.createMediaElementSource(current);
+    const bass=context.createBiquadFilter();bass.type='lowshelf';bass.frequency.value=100;
+    const mid=context.createBiquadFilter();mid.type='peaking';mid.frequency.value=1000;mid.Q.value=.707;
+    const treble=context.createBiquadFilter();treble.type='highshelf';treble.frequency.value=8000;
+    const headroom=context.createGain();toneNodes=[bass,mid,treble,headroom];
+    sourceNode.connect(bass);bass.connect(mid);mid.connect(treble);treble.connect(headroom);headroom.connect(context.destination);
+    tone(toneSettings);void context.resume().catch(()=>{});
+}

@@ -4,17 +4,17 @@
 @inject QueueService Queue
 @inject PlaybackCoordinator Playback
 @inject PlayerService Player
-<div class="page-heading"><div><h1>Sua biblioteca</h1><p class="page-description">Faixas salvas, favoritos e playlists. Seu acervo fica neste computador.</p></div></div>
-@if (LibraryStore.Error is not null) { <p class="inline-notice" role="alert">@LibraryStore.Error</p> }
-@if (_notice is not null) { <p class="inline-notice" role="status">@_notice</p> }
-<div class="library-tabs" aria-label="Coleções">
-    <button aria-pressed="@(_view == "saved" ? "true" : "false")" @onclick='() => SelectView("saved")'>Salvas <span>@LibraryStore.Saved.Count</span></button>
-    <button aria-pressed="@(_view == "favorites" ? "true" : "false")" @onclick='() => SelectView("favorites")'>Favoritos <span>@LibraryStore.Favorites.Count</span></button>
-    <button aria-pressed="@(_view == "history" ? "true" : "false")" @onclick='() => SelectView("history")'>Histórico <span>@LibraryStore.History.Count</span></button>
+<div class="page-heading"><div><h1>@T["Sua biblioteca"]</h1><p class="page-description">@T["Faixas salvas, favoritos e playlists. Seu acervo fica neste computador."]</p></div></div>
+@if (LibraryStore.Error is not null) { <p class="inline-notice" role="alert">@T[LibraryStore.Error]</p> }
+@if (_notice is not null) { <p class="inline-notice" role="status">@T[_notice]</p> }
+<div class="library-tabs" aria-label="@T["Coleções"]">
+    <button aria-pressed="@(_view == "saved" ? "true" : "false")" @onclick='() => SelectView("saved")'>@T["Salvas"] <span>@LibraryStore.Saved.Count</span></button>
+    <button aria-pressed="@(_view == "favorites" ? "true" : "false")" @onclick='() => SelectView("favorites")'>@T["Favoritos"] <span>@LibraryStore.Favorites.Count</span></button>
+    <button aria-pressed="@(_view == "history" ? "true" : "false")" @onclick='() => SelectView("history")'>@T["Histórico"] <span>@LibraryStore.History.Count</span></button>
 </div>
 <section class="playlist-manager" aria-labelledby="playlists-title">
     <div class="section-heading"><h2 id="playlists-title">Playlists</h2><span>@LibraryStore.Playlists.Count / 100</span></div>
-    <form class="inline-form" @onsubmit="CreatePlaylist" @onsubmit:preventDefault><label for="playlist-name">Nome da nova playlist</label><input id="playlist-name" maxlength="60" placeholder="Ex.: Caminho de casa" @bind="_name" /><button class="secondary-button" type="submit">Criar playlist</button></form>
+    <form class="inline-form" @onsubmit="CreatePlaylist" @onsubmit:preventDefault><label for="playlist-name">@T["Nome da nova playlist"]</label><input id="playlist-name" maxlength="60" placeholder="@T["Ex.: Caminho de casa"]" @bind="_name" /><button class="secondary-button" type="submit">@T["Criar playlist"]</button></form>
     @if (LibraryStore.Playlists.Count > 0)
     {
         <div class="playlist-list">
@@ -27,31 +27,31 @@
     <div class="section-heading"><h2 id="collection-title">@CollectionName</h2><span>@Tracks.Count faixas</span></div>
     @if (_selected is { } selected && LibraryStore.Playlists.FirstOrDefault(p => p.Id == selected) is { } playlist)
     {
-        <form class="inline-form playlist-edit" @onsubmit="RenamePlaylist" @onsubmit:preventDefault><label for="rename-playlist">Renomear playlist</label><input id="rename-playlist" maxlength="60" @bind="_rename" /><button class="secondary-button" type="submit">Renomear</button><button class="text-button" type="button" @onclick="AskDelete">Excluir playlist</button></form>
+        <form class="inline-form playlist-edit" @onsubmit="RenamePlaylist" @onsubmit:preventDefault><label for="rename-playlist">@T["Renomear playlist"]</label><input id="rename-playlist" maxlength="60" @bind="_rename" /><button class="secondary-button" type="submit">@T["Renomear"]</button><button class="text-button" type="button" @onclick="AskDelete">@T["Excluir playlist"]</button></form>
         @if (_confirmDelete)
-        { <div class="inline-confirm" role="alert"><span>Excluir “@playlist.Name”? As músicas salvas permanecem na biblioteca.</span><button class="secondary-button" @onclick="DeletePlaylist">Excluir</button><button class="text-button" @onclick="() => _confirmDelete = false">Cancelar</button></div> }
+        { <div class="inline-confirm" role="alert"><span>Excluir “@playlist.Name”? As músicas salvas permanecem na biblioteca.</span><button class="secondary-button" @onclick="DeletePlaylist">@T["Excluir"]</button><button class="text-button" @onclick="() => _confirmDelete = false">@T["Cancelar"]</button></div> }
     }
     @if (Tracks.Count > 0)
     {
-        <div class="collection-controls"><button class="secondary-button" disabled="@(!Player.Ready)" @onclick="PlayCollection"><Icon Name="play" Size="15" />Ouvir coleção</button>
+        <div class="collection-controls"><button class="secondary-button" disabled="@(!Player.Ready)" @onclick="PlayCollection"><Icon Name="play" Size="15" />@T["Ouvir coleção"]</button>
         @if (_selected is null && _view != "history" && LibraryStore.Playlists.Count > 0)
         {
-            <label for="target-playlist">Adicionar uma faixa à playlist</label><select id="target-playlist" @bind="_targetPlaylist"><option value="">Escolher playlist</option>@foreach (var target in LibraryStore.Playlists) { <option value="@target.Id">@target.Name</option> }</select>
+            <label for="target-playlist">@T["Adicionar uma faixa à playlist"]</label><select id="target-playlist" @bind="_targetPlaylist"><option value="">@T["Escolher playlist"]</option>@foreach (var target in LibraryStore.Playlists) { <option value="@target.Id">@target.Name</option> }</select>
         }
-        @if (_view == "history" && _selected is null) { <button class="text-button" @onclick="() => _confirmClearHistory = true">Limpar histórico</button> }
+        @if (_view == "history" && _selected is null) { <button class="text-button" @onclick="() => _confirmClearHistory = true">@T["Limpar histórico"]</button> }
         </div>
-        @if (_confirmClearHistory) { <div class="inline-confirm" role="alert"><span>Apagar o histórico usado nas recomendações?</span><button class="secondary-button" @onclick="ClearHistory">Apagar histórico</button><button class="text-button" @onclick="() => _confirmClearHistory = false">Cancelar</button></div> }
+        @if (_confirmClearHistory) { <div class="inline-confirm" role="alert"><span>@T["Apagar o histórico usado nas recomendações?"]</span><button class="secondary-button" @onclick="ClearHistory">@T["Apagar histórico"]</button><button class="text-button" @onclick="() => _confirmClearHistory = false">@T["Cancelar"]</button></div> }
         <TrackResults Tracks="Tracks" />
         @if (_selected is not null || !string.IsNullOrEmpty(_targetPlaylist))
         {
-            <div class="playlist-membership" aria-label="Editar músicas da playlist">
+            <div class="playlist-membership" aria-label="@T["Editar músicas da playlist"]">
             @foreach (var track in Tracks)
-            { <div><span>@track.Title</span>@if (_selected is { } id) { <button class="text-button" aria-label="Remover @track.Title da playlist" @onclick="() => LibraryStore.RemoveFromPlaylist(id, track)">Remover</button> } else { <button class="text-button" aria-label="Adicionar @track.Title à playlist" @onclick="() => AddToPlaylist(track)">Adicionar à playlist</button> }</div> }
+            { <div><span>@track.Title</span>@if (_selected is { } id) { <button class="text-button" aria-label="@T.Format("Remover {0} da playlist", track.Title)" @onclick="() => LibraryStore.RemoveFromPlaylist(id, track)">@T["Remover"]</button> } else { <button class="text-button" aria-label="@T.Format("Adicionar {0} à playlist", track.Title)" @onclick="() => AddToPlaylist(track)">@T["Adicionar à playlist"]</button> }</div> }
             </div>
         }
     }
     else
-    { <div class="empty-state"><span class="empty-symbol"><Icon Name="library" Size="30" /></span><h3>@EmptyTitle</h3><p>@EmptyText</p><a class="secondary-button" href="/search">Buscar músicas</a></div> }
+    { <div class="empty-state"><span class="empty-symbol"><Icon Name="library" Size="30" /></span><h3>@EmptyTitle</h3><p>@EmptyText</p><a class="secondary-button" href="/search">@T["Buscar músicas"]</a></div> }
 </section>
 @code {
     [SupplyParameterFromQuery(Name = "view")] public string? InitialView { get; set; }
@@ -68,9 +68,9 @@
     private bool _confirmDelete, _confirmClearHistory;
     private IReadOnlyList<Track> Tracks => _selected is { } id ? LibraryStore.Playlists.FirstOrDefault(p => p.Id == id)?.Tracks ?? []
         : _view == "favorites" ? LibraryStore.Favorites : _view == "history" ? LibraryStore.History.Select(h => h.Track).ToArray() : LibraryStore.Saved;
-    private string CollectionName => _selected is { } id ? LibraryStore.Playlists.FirstOrDefault(p => p.Id == id)?.Name ?? "Playlist" : _view switch { "favorites" => "Músicas favoritas", "history" => "Ouvidas recentemente", _ => "Músicas salvas" };
-    private string EmptyTitle => _selected is not null ? "Dê um som a esta playlist." : _view == "history" ? "Seu histórico começa ao ouvir." : "Seu acervo começa com uma faixa.";
-    private string EmptyText => _selected is not null ? "Salve músicas na busca e adicione-as à playlist pela coleção Salvas." : _view == "history" ? "Uma música entra aqui após 30 segundos ou metade da faixa, com mínimo de 5 segundos. Avançar a posição não conta." : "Use o marcador para salvar e o coração para favoritar nos resultados da busca.";
+    private string CollectionName => _selected is { } id ? LibraryStore.Playlists.FirstOrDefault(p => p.Id == id)?.Name ?? "Playlist" : _view switch { "favorites" => T["Músicas favoritas"], "history" => T["Ouvidas recentemente"], _ => T["Músicas salvas"] };
+    private string EmptyTitle => _selected is not null ? T["Dê um som a esta playlist."] : _view == "history" ? T["Seu histórico começa ao ouvir."] : T["Seu acervo começa com uma faixa."];
+    private string EmptyText => _selected is not null ? T["Salve músicas na busca e adicione-as à playlist pela coleção Salvas."] : _view == "history" ? T["Uma música entra aqui após 30 segundos ou metade da faixa, com mínimo de 5 segundos. Avançar a posição não conta."] : T["Use o marcador para salvar e o coração para favoritar nos resultados da busca."];
     protected override void OnInitialized() { LibraryStore.Changed += Refresh; Player.Changed += Refresh; }
     private void Refresh() => _ = InvokeAsync(StateHasChanged);
     private void SelectView(string view) { _view = view; _selected = null; _confirmDelete = _confirmClearHistory = false; }
@@ -78,18 +78,18 @@
     private void CreatePlaylist() => Try(() => { SelectPlaylist(LibraryStore.CreatePlaylist(_name)); _name = ""; _notice = "Playlist criada."; });
     private void RenamePlaylist() => Try(() => { if (_selected is { } id) LibraryStore.RenamePlaylist(id, _rename); _notice = "Playlist renomeada."; });
     private void AskDelete() => _confirmDelete = true;
-    private void DeletePlaylist() { if (_selected is { } id) LibraryStore.DeletePlaylist(id); _selected = null; _confirmDelete = false; _notice = "Playlist excluída."; }
-    private void ClearHistory() { LibraryStore.ClearHistory(); _confirmClearHistory = false; _notice = "Histórico apagado."; }
-    private void AddToPlaylist(Track track) => Try(() => { if (Guid.TryParse(_targetPlaylist, out var id)) { LibraryStore.AddToPlaylist(id, track); _notice = "Faixa adicionada à playlist."; } });
+    private void DeletePlaylist() { if (_selected is { } id) LibraryStore.DeletePlaylist(id); _selected = null; _confirmDelete = false; _notice = T["Playlist excluída."]; }
+    private void ClearHistory() { LibraryStore.ClearHistory(); _confirmClearHistory = false; _notice = T["Histórico apagado."]; }
+    private void AddToPlaylist(Track track) => Try(() => { if (Guid.TryParse(_targetPlaylist, out var id)) { LibraryStore.AddToPlaylist(id, track); _notice = T["Faixa adicionada à playlist."]; } });
     private void Try(Action action) { try { action(); } catch (InvalidOperationException e) { _notice = e.Message; } }
     private async Task PlayCollection()
     {
         var tracks = Tracks.ToArray();
         if (tracks.Length == 0) return;
         var available = 200 - Queue.Entries.Count;
-        if (available <= 0) { _notice = "A fila está cheia. Remova faixas antes de ouvir a coleção."; return; }
+        if (available <= 0) { _notice = T["A fila está cheia. Remova faixas antes de ouvir a coleção."]; return; }
         var entries = tracks.Take(available).Select(Queue.Add).ToArray();
-        _notice = entries.Length < tracks.Length ? "A fila comporta 200 faixas; adicionado o início desta coleção." : "Coleção adicionada à fila.";
+        _notice = entries.Length < tracks.Length ? T["A fila comporta 200 faixas; adicionado o início desta coleção."] : T["Coleção adicionada à fila."];
         await Playback.PlayEntryAsync(entries[0].Key);
     }
     public void Dispose() { LibraryStore.Changed -= Refresh; Player.Changed -= Refresh; }

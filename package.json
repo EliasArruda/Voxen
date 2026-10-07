@@ -4,7 +4,7 @@
   "description": "Desktop music player built with Photino, Blazor and native FFmpeg/SDL audio",
   "main": "index.js",
   "scripts": {
-    "test": "node Tests/audio.checks.mjs && node Tests/shortcuts.checks.mjs && node Tests/player-controls.checks.mjs"
+    "test": "node Tests/audio.checks.mjs && node Tests/shortcuts.checks.mjs && node Tests/player-controls.checks.mjs && node Tests/tone.checks.mjs"
   },
   "keywords": [],
   "author": "",

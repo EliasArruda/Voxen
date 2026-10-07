@@ -1,41 +1,49 @@
 @inherits LayoutComponentBase
-@inject MusicProviders Providers
+@implements IDisposable
+@inject AppPreferences Preferences
+@inject NavigationManager Navigation
 <TrackAtmosphere />
-<a class="skip-link" href="#main-content">Ir para o conteúdo</a>
+<a class="skip-link" href="#main-content">@T["Ir para o conteúdo"]</a>
+<CascadingValue Value="@Preferences.Data.Language">
 <div class="app-shell @(_showInspector ? "inspector-open" : "")">
     <aside class="sidebar">
-        <a class="brand" href="/" aria-label="Voxen, início">
+        <a class="brand" href="/" aria-label="@T["Voxen, início"]">
             <span class="brand-symbol"><Icon Name="wave" Size="23" /></span>
             <span class="brand-text">Voxen<small>STUDIO</small></span>
         </a>
-        <nav aria-label="Navegação principal">
-            <NavLink href="/" Match="NavLinkMatch.All" title="Início" aria-label="Início"><Icon Name="home" /><span>Início</span></NavLink>
-            <NavLink href="/search" title="Buscar" aria-label="Buscar"><Icon Name="search" /><span>Buscar</span></NavLink>
-            <NavLink href="/library" title="Biblioteca" aria-label="Biblioteca"><Icon Name="library" /><span>Biblioteca</span></NavLink>
+        <nav aria-label="@T["Navegação principal"]">
+            <NavLink href="/" Match="NavLinkMatch.All" title="@T["Início"]" aria-label="@T["Início"]"><Icon Name="home" /><span>@T["Início"]</span></NavLink>
+            <NavLink href="/search" title="@T["Buscar"]" aria-label="@T["Buscar"]"><Icon Name="search" /><span>@T["Buscar"]</span></NavLink>
+            <NavLink href="/library" title="@T["Biblioteca"]" aria-label="@T["Biblioteca"]"><Icon Name="library" /><span>@T["Biblioteca"]</span></NavLink>
         </nav>
-        <div class="library-section" aria-label="Atalhos da biblioteca">
-            <a class="library-shortcut" href="/library?view=favorites" title="Músicas favoritas" aria-label="Abrir músicas favoritas"><Icon Name="heart" Size="22" /></a>
-            <a class="library-shortcut" href="/library#playlists-title" title="Suas playlists" aria-label="Abrir suas playlists"><Icon Name="music" Size="22" /></a>
+        <div class="library-section" aria-label="@T["Atalhos da biblioteca"]">
+            <a class="library-shortcut" href="/library?view=favorites" title="@T["Músicas favoritas"]" aria-label="@T["Abrir músicas favoritas"]"><Icon Name="heart" Size="22" /></a>
+            <a class="library-shortcut" href="/library#playlists-title" title="@T["Suas playlists"]" aria-label="@T["Abrir suas playlists"]"><Icon Name="music" Size="22" /></a>
         </div>
-        <div class="sidebar-note" title="YouTube e SoundCloud disponíveis"><span class="source-dot"></span><span class="sr-only">YouTube e SoundCloud disponíveis</span></div>
+        <div class="sidebar-note" title="@T["YouTube e SoundCloud disponíveis"]"><span class="source-dot"></span><span class="sr-only">@T["YouTube e SoundCloud disponíveis"]</span></div>
     </aside>
     <header class="topbar">
-        <a class="workspace-title" href="/" aria-label="Voxen, início">Voxen</a>
-        <a class="global-search" href="/search"><Icon Name="search" Size="19" /><span>O que você quer ouvir?</span><kbd>Ctrl K</kbd></a>
-        <div class="topbar-actions"><KeyboardShortcuts QueueToggle="ToggleInspector" DismissPanels="CloseInspector" /><span class="connection-status"><span class="source-dot"></span>Áudio nativo</span>
-            <button class="icon-button inspector-toggle" aria-label="Mostrar fila" aria-controls="queue-panel" aria-expanded="@(_showInspector ? "true" : "false")" @onclick="ToggleInspector"><Icon Name="queue" /></button>
+        <a class="workspace-title" href="/" aria-label="@T["Voxen, início"]">Voxen</a>
+        <a class="global-search" href="/search"><Icon Name="search" Size="19" /><span>@T["O que você quer ouvir?"]</span><kbd>Ctrl K</kbd></a>
+        <div class="topbar-actions"><KeyboardShortcuts QueueToggle="ToggleInspector" DismissPanels="ClosePanels" ShowButton="false" /><button class="settings-trigger" aria-label="@T["Configurações"]" aria-expanded="@(_settings ? "true" : "false")" @onclick="ToggleSettings"><Icon Name="settings" Size="19" /><span>@T["Configurações"]</span></button>
+            <button class="icon-button inspector-toggle" aria-label="@T["Mostrar fila"]" aria-controls="queue-panel" aria-expanded="@(_showInspector ? "true" : "false")" @onclick="ToggleInspector"><Icon Name="queue" /></button>
         </div>
     </header>
-    <main id="main-content" tabindex="-1"><div class="page-content">@Body</div></main>
-    <aside id="queue-panel" class="right-inspector" aria-label="Fila de reprodução">
-        <header class="inspector-heading"><Icon Name="wave" Size="18" /><h2>Agora tocando</h2><button class="icon-button inspector-close" aria-label="Fechar fila" @onclick="ToggleInspector"><Icon Name="close" Size="17" /></button></header>
-        <QueuePanel />
-        <div class="provider-section"><h3>Fontes de música</h3><div><span class="provider-name" title="Youtube"><Icon Name="youtube" Size="20" /><span class="sr-only">Youtube</span></span><span class="provider-state">Disponível</span></div><div><span class="provider-name" title="Soundcloud"><Icon Name="cloud" Size="20" /><span class="sr-only">Soundcloud</span></span><span class="coming-soon">@(Providers.SoundCloudOfficial ? "API oficial" : "Integração pública")</span></div></div>
+    <main id="main-content" tabindex="-1"><div class="page-content">@if(_settings) { <SettingsPanel /> } else { @Body }</div></main>
+    <aside id="queue-panel" class="right-inspector" aria-label="@T["Fila de reprodução"]">
+        <QueuePanel Close="ToggleInspector" />
     </aside>
     <PlayerDock />
 </div>
+</CascadingValue>
 @code {
-    private bool _showInspector;
+    private bool _showInspector, _settings;
+    protected override void OnInitialized() { Preferences.Changed+=Refresh;Navigation.LocationChanged+=Navigated; }
+    private void Navigated(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) { _settings=false;Refresh(); }
+    private void Refresh()=>_ = InvokeAsync(StateHasChanged);
+    public void Dispose() { Preferences.Changed-=Refresh;Navigation.LocationChanged-=Navigated; }
+    private void ClosePanels() { _settings=false;CloseInspector(); }
+    private void ToggleSettings()=>_settings=!_settings;
     private void CloseInspector() => _showInspector = false;
     private void ToggleInspector() => _showInspector = !_showInspector;
 }

@@ -5,29 +5,30 @@
 @inject PlayerService Player
 @inject PlaybackCoordinator Playback
 @inject LibraryService Library
-<button class="icon-button" aria-label="Atalhos do teclado" aria-expanded="@(_help ? "true" : "false")" aria-controls="keyboard-shortcuts" @onclick="ToggleHelp"><Icon Name="keyboard" Size="19" /></button>
+@if(ShowButton) { <button class="icon-button" aria-label="@T["Atalhos do teclado"]" aria-expanded="@(_help ? "true" : "false")" aria-controls="keyboard-shortcuts" @onclick="ToggleHelp"><Icon Name="keyboard" Size="19" /></button> }
 @if (_help)
 {
-    <section id="keyboard-shortcuts" class="shortcuts-panel" aria-label="Atalhos do teclado">
-        <div class="section-heading"><h2>Seu player, pelo teclado</h2><button id="shortcuts-close" class="icon-button" aria-label="Fechar atalhos" @onclick="CloseHelp"><Icon Name="close" Size="17" /></button></div>
-        <p>Funcionam com a janela do Voxen em foco. Digitar em campos mantém o comportamento normal.</p>
+    <section id="keyboard-shortcuts" class="shortcuts-panel" aria-label="@T["Atalhos do teclado"]">
+        <div class="section-heading"><h2>@T["Seu player, pelo teclado"]</h2><button id="shortcuts-close" class="icon-button" aria-label="@T["Fechar atalhos"]" @onclick="CloseHelp"><Icon Name="close" Size="17" /></button></div>
+        <p>@T["Funcionam com a janela do Voxen em foco. Digitar em campos mantém o comportamento normal."]</p>
         <dl class="shortcut-list">
-            <div><dt>Buscar e focar pesquisa</dt><dd><kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>/</kbd></dd></div>
-            <div><dt>Reproduzir / pausar</dt><dd><kbd>Espaço</kbd></dd></div>
-            <div><dt>Próxima / anterior</dt><dd><kbd>N</kbd> / <kbd>P</kbd></dd></div>
-            <div><dt>Avançar / voltar 5 segundos</dt><dd><kbd>Direita</kbd> / <kbd>Esquerda</kbd></dd></div>
-            <div><dt>Aumentar / reduzir volume</dt><dd><kbd>Cima</kbd> / <kbd>Baixo</kbd></dd></div>
-            <div><dt>Silenciar / restaurar volume</dt><dd><kbd>M</kbd></dd></div>
-            <div><dt>Favoritar faixa atual</dt><dd><kbd>F</kbd></dd></div>
-            <div><dt>Salvar faixa atual</dt><dd><kbd>B</kbd></dd></div>
-            <div><dt>Mostrar / fechar fila</dt><dd><kbd>Q</kbd></dd></div>
-            <div><dt>Biblioteca / início</dt><dd><kbd>Alt</kbd> + <kbd>L</kbd> / <kbd>H</kbd></dd></div>
-            <div><dt>Mostrar atalhos / fechar painel</dt><dd><kbd>?</kbd> / <kbd>Esc</kbd></dd></div>
+            <div><dt>@T["Buscar e focar pesquisa"]</dt><dd><kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>/</kbd></dd></div>
+            <div><dt>@T["Reproduzir / pausar"]</dt><dd><kbd>@T["Espaço"]</kbd></dd></div>
+            <div><dt>@T["Próxima / anterior"]</dt><dd><kbd>N</kbd> / <kbd>P</kbd></dd></div>
+            <div><dt>@T["Avançar / voltar 5 segundos"]</dt><dd><kbd>@T["Direita"]</kbd> / <kbd>@T["Esquerda"]</kbd></dd></div>
+            <div><dt>@T["Aumentar / reduzir volume"]</dt><dd><kbd>@T["Cima"]</kbd> / <kbd>@T["Baixo"]</kbd></dd></div>
+            <div><dt>@T["Silenciar / restaurar volume"]</dt><dd><kbd>M</kbd></dd></div>
+            <div><dt>@T["Favoritar faixa atual"]</dt><dd><kbd>F</kbd></dd></div>
+            <div><dt>@T["Salvar faixa atual"]</dt><dd><kbd>B</kbd></dd></div>
+            <div><dt>@T["Mostrar / fechar fila"]</dt><dd><kbd>Q</kbd></dd></div>
+            <div><dt>@T["Biblioteca / início"]</dt><dd><kbd>Alt</kbd> + <kbd>L</kbd> / <kbd>H</kbd></dd></div>
+            <div><dt>@T["Mostrar atalhos / fechar painel"]</dt><dd><kbd>?</kbd> / <kbd>Esc</kbd></dd></div>
         </dl>
-        @if (_notice is not null) { <p role="status">@_notice</p> }
+        @if (_notice is not null) { <p role="status">@T[_notice]</p> }
     </section>
 }
 @code {
+    [Parameter] public bool ShowButton { get; set; } = true;
     [Parameter] public EventCallback QueueToggle { get; set; }
     [Parameter] public EventCallback DismissPanels { get; set; }
     private Microsoft.JSInterop.IJSObjectReference? _module;

@@ -23,6 +23,8 @@ public sealed class NativeAudioService : IAsyncDisposable
     private long _version, _written;
     private double _start, _duration, _volume = .7;
     private bool _paused;
+    private AudioTone _tone = new();
+    public void SetTone(AudioTone tone) => Volatile.Write(ref _tone, tone.Safe());
     public bool Ready { get; private set; }
     public async Task InitializeAsync(Func<AudioSignal, Task> receive)
     {
@@ -107,6 +109,8 @@ public sealed class NativeAudioService : IAsyncDisposable
         var buffer = new byte[16384]; var pinned = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         // Drain stderr continuously so a failed decoder cannot block behind a full pipe. Never log signed URLs.
         var errors = process.StandardError.ReadToEndAsync(token);
+        var tone = Volatile.Read(ref _tone); var processor = new AudioToneProcessor(tone);
+        var carry = 0;
         var started = false; var lastReport = Stopwatch.StartNew();
         try
         {
@@ -114,9 +118,17 @@ public sealed class NativeAudioService : IAsyncDisposable
             {
                 while (Queued() > BytesPerSecond || (_paused && started))
                 { if (lastReport.ElapsedMilliseconds >= 250) { Emit("time"); lastReport.Restart(); } await Task.Delay(30, token); }
-                var read = await process.StandardOutput.BaseStream.ReadAsync(buffer, token).AsTask().WaitAsync(TimeSpan.FromSeconds(25), token);
+                var read = await process.StandardOutput.BaseStream.ReadAsync(buffer.AsMemory(carry), token).AsTask().WaitAsync(TimeSpan.FromSeconds(25), token);
                 if (read == 0) break;
-                Put(pinned.AddrOfPinnedObject(), read); _written += read;
+                read += carry;
+                var complete = read - read % 4;
+                if (complete == 0) { carry = read; continue; }
+                var updatedTone = Volatile.Read(ref _tone);
+                if (tone != updatedTone) { tone = updatedTone; processor = new AudioToneProcessor(tone); }
+                processor.Process(buffer.AsSpan(0, complete));
+                Put(pinned.AddrOfPinnedObject(), complete); _written += complete;
+                carry = read - complete;
+                if (carry > 0) Buffer.BlockCopy(buffer, complete, buffer, 0, carry);
                 if (!started) { started = true; if (!_paused) { ResumeDevice(); Emit("playing"); } else Emit("pause"); }
                 if (lastReport.ElapsedMilliseconds >= 250) { Emit("time"); lastReport.Restart(); }
             }

@@ -10,7 +10,11 @@ using var instance = new Mutex(true, "Voxen." + Environment.UserName,
 if (!firstInstance) { Console.WriteLine("Voxen já está aberto neste usuário. Use a janela existente."); return 0; }
 
 var builder = PhotinoBlazorApp.CreateBuilder(args);
+builder.Services.AddSingleton<AppPreferences>();
+builder.Services.AddSingleton<AppText>();
+builder.Services.AddSingleton<CoverPaletteService>();
 builder.Services.AddSingleton<YoutubeClient>();
+builder.Services.AddSingleton<YouTubeMusicSearchService>();
 builder.Services.AddSingleton<YouTubeService>();
 builder.Services.AddSingleton<SoundCloudService>();
 builder.Services.AddSingleton<SoundCloudWebService>();

@@ -2,13 +2,13 @@
 @inject PlaybackCoordinator Playback
 @inject PlayerService Player
 <div class="track-table">
-    <div class="track-header" aria-hidden="true"><span>#</span><span></span><span>Título</span><span>Artista / canal</span><span>Fonte</span><span><Icon Name="clock" Size="15" /></span><span></span></div>
-    <ol class="track-list" aria-label="Faixas">
+    <div class="track-header" aria-hidden="true"><span>#</span><span></span><span>@T["Título"]</span><span>@T["Artista / canal"]</span><span>@T["Fonte"]</span><span><Icon Name="clock" Size="15" /></span><span></span></div>
+    <ol class="track-list" aria-label="@T["Faixas"]">
         @for (var i = 0; i < Tracks.Count; i++)
         {
             var track = Tracks[i];
             <li class="track-row" @key="LibraryService.Key(track)">
-                <button class="row-play icon-button" @onmouseenter="() => Player.PrepareAsync(track)" @onfocus="() => Player.PrepareAsync(track)" disabled="@(!Player.Ready)" aria-label="Reproduzir @track.Title" @onclick="() => Playback.PlayTrackAsync(track)"><Icon Name="play" Size="14" /></button>
+                <button class="row-play icon-button" @onmouseenter="() => Player.PrepareAsync(track)" @onfocus="() => Player.PrepareAsync(track)" disabled="@(!Player.Ready)" aria-label="@T.Format("Reproduzir {0}", track.Title)" @onclick="() => Playback.PlayTrackAsync(track)"><Icon Name="play" Size="14" /></button>
                 <div class="track-art" aria-hidden="true">
                     @if (!string.IsNullOrWhiteSpace(track.ThumbnailUrl))
                     { <img src="@track.ThumbnailUrl" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" /> }
@@ -17,7 +17,7 @@
                 <div class="track-info"><h3 title="@track.Title">@track.Title</h3><p>@track.Artist</p></div>
                 <span class="track-artist" title="@track.Artist">@track.Artist</span>
                 <span role="img" title="@track.Source" aria-label="@track.Source" class="source-badge @(track.Source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(track.Source == TrackSource.SoundCloud ? "cloud" : "youtube")" Size="13" /></span>
-                <span class="track-duration" aria-label="Duração">@FormatDuration(track.Duration)</span>
+                <span class="track-duration" aria-label="@T["Duração"]">@FormatDuration(track.Duration)</span>
                 <TrackActions Track="track" />
             </li>
         }
