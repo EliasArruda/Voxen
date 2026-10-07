@@ -5,39 +5,30 @@
 @inject PlayerService Player
 @inject QueueService Queue
 @inject PlaybackCoordinator Playback
-<div class="page-heading"><div><h1>@T["Seu próximo som."]</h1><p class="page-description">@T["Um espaço para descobrir, explorar e voltar ao que você gosta."]</p></div></div>
-<section class="personal-discovery" aria-labelledby="personal-title" aria-busy="@(_loading ? "true" : "false")">
-    <div class="section-heading"><h2 id="personal-title">@(Library.History.Count > 0 || Library.Favorites.Count > 0 ? T["Feito para o seu ritmo"] : T["Descobertas para começar"])</h2><button class="text-button" disabled="@_loading" @onclick="LoadRecommendations">@T["Atualizar descobertas"]</button></div>
-    <p class="discovery-context">@(Library.History.Count > 0 || Library.Favorites.Count > 0 ? T["Novas faixas a partir dos artistas que você ouviu e favoritou. As últimas 20 ouvidas ficam fora desta seleção."] : T["Ouça e favorite músicas. As próximas recomendações vão acompanhar seu gosto."])</p>
-    @if (_loading) { <p class="inline-notice" role="status">@T["Encontrando novos sons…"]</p> }
-    else if (_error is not null) { <div class="empty-state" role="alert"><h3>@T["As descobertas precisam de mais um instante."]</h3><p>@T[_error]</p><button class="secondary-button" @onclick="LoadRecommendations">@T["Tentar novamente"]</button></div> }
-    else if (_recommendations.Count > 0)
+<h1 class="sr-only">@T["Início"]</h1>
+<MusicMoods />
+<section class="quick-picks" aria-labelledby="quick-picks-title">
+    <div class="section-heading"><h2 id="quick-picks-title">@T["Escolha a dedo"]</h2><button class="text-button" disabled="@_loading" @onclick="LoadRecommendations">@T["Atualizar descobertas"]</button></div>
+    <p class="discovery-context">@(Library.History.Count > 0 ? T["Seu repertório e novos sons para acompanhar o dia."] : T["Ouça e favorite músicas. As próximas recomendações vão acompanhar seu gosto."])</p>
+    @if(QuickPicks.Count > 0)
     {
-        <ol class="recommendation-list" aria-label="@T["Recomendações"]">
-        @foreach (var item in _recommendations)
+        <ol class="quick-pick-grid">
+        @foreach(var track in QuickPicks)
         {
-            <li @key="LibraryService.Key(item.Track)"><button class="recommendation-play" disabled="@(!Player.Ready)" aria-label="@T.Format("Reproduzir {0}", item.Track.Title)" @onclick="() => Playback.PlayTrackAsync(item.Track)"><span class="recommendation-cover">@if (item.Track.ThumbnailUrl.Length > 0) { <img src="@item.Track.ThumbnailUrl" alt="" loading="lazy" referrerpolicy="no-referrer" /> } else { <Icon Name="play" Size="18" /> }</span><span><strong title="@item.Track.Title">@item.Track.Title</strong><small>@item.Track.Artist</small><small class="recommendation-reason">@T[item.Reason]</small></span></button><TrackActions Track="item.Track" /></li>
+            <li @key="LibraryService.Key(track)"><button class="quick-pick-play" disabled="@(!Player.Ready)" @onmouseenter="() => Player.PrepareAsync(track)" @onfocus="() => Player.PrepareAsync(track)" @onclick="() => Playback.PlayTrackAsync(track)" aria-label="@T.Format("Reproduzir {0}", track.Title)"><span class="quick-pick-art">@if(track.ThumbnailUrl.Length>0) { <img src="@track.ThumbnailUrl" alt="" loading="lazy" referrerpolicy="no-referrer" /> } else { <Icon Name="music" /> }</span><span><strong title="@track.Title">@track.Title</strong><small>@track.Artist</small></span></button></li>
         }
         </ol>
     }
-    else { <div class="empty-state"><h3>@T["Você já passou por esta seleção."]</h3><p>@T["Ouça outros artistas ou atualize as descobertas para ampliar suas referências."]</p><a class="secondary-button" href="/search">@T["Buscar músicas"]</a></div> }
+    else if(_loading) { <div class="quick-pick-grid" aria-hidden="true">@for(var i=0;i<12;i++) { <div class="skeleton-row"><span class="skeleton-art"></span><span class="skeleton-text"></span></div> }</div> }
+    @if(_loading) { <p class="inline-notice" role="status">@T["Encontrando novos sons…"]</p> }
+    else if(_error is not null) { <p class="inline-notice" role="alert">@T[_error]</p><button class="secondary-button" @onclick="LoadRecommendations">@T["Tentar novamente"]</button> }
+    else if(QuickPicks.Count==0) { <p>@T["Você já passou por esta seleção."]</p><a class="text-button" href="/explore">@T["Explorar"]</a> }
 </section>
-@if (Library.History.Count > 0)
-{
-    <section class="discovery-section"><div class="section-heading"><h2>@T["Ouvidas recentemente"]</h2><a class="text-button" href="/library">@T["Ver biblioteca"]</a></div><TrackResults Tracks="@Library.History.Take(5).Select(entry => entry.Track).ToArray()" /></section>
-}
-<section class="discovery-section" aria-labelledby="discovery-title">
-    <div class="section-heading"><h2 id="discovery-title">@T["Explore no seu ritmo"]</h2><span>@T["Buscas para começar"]</span></div>
-    <div class="discovery-grid">
-        <a href="/search?q=jazz%20instrumental" class="discovery-tile"><span class="tile-art tile-jazz"><Icon Name="music" Size="24" /></span><span><strong>@T["Jazz instrumental"]</strong><small>@T["Desacelere e encontre seu ritmo."]</small></span><Icon Name="arrow" Size="16" /></a>
-        <a href="/search?q=rock%20alternativo" class="discovery-tile"><span class="tile-art tile-rock"><Icon Name="wave" Size="24" /></span><span><strong>@T["Rock alternativo"]</strong><small>@T["Guitarras e novas descobertas."]</small></span><Icon Name="arrow" Size="16" /></a>
-        <a href="/search?q=ambient%20music" class="discovery-tile"><span class="tile-art tile-ambient"><Icon Name="headphones" Size="24" /></span><span><strong>Ambient</strong><small>@T["Texturas para se concentrar."]</small></span><Icon Name="arrow" Size="16" /></a>
-        <a href="/search?q=electronic%20music" class="discovery-tile"><span class="tile-art tile-electronic"><Icon Name="wave" Size="24" /></span><span><strong>@T["Eletrônica"]</strong><small>@T["Explore outras frequências."]</small></span><Icon Name="arrow" Size="16" /></a>
-    </div>
-</section>
-<div class="release-note"><Icon Name="info" Size="19" /><p>@T["Busque, dê play e monte sua fila. Ative recomendações para continuar descobrindo."]</p></div>
-
+@if(_recommendations.Count>0) { <MusicShelf Title="@T["Para descobrir"]" Tracks="@_recommendations.Select(item=>item.Track).ToArray()" Link="/explore" /> }
+@if(Library.History.Count>0) { <MusicShelf Title="@T["Ouvidas recentemente"]" Tracks="@Library.History.Select(entry=>entry.Track).DistinctBy(LibraryService.Key).Take(12).ToArray()" Link="/library" /> }
+<section class="genre-section"><div class="section-heading"><h2>@T["Momentos e gêneros"]</h2></div><MusicMoods /></section>
 @code {
+    private IReadOnlyList<Track> QuickPicks => Library.History.Select(entry => entry.Track).Concat(Library.Favorites).Concat(_recommendations.Select(item => item.Track)).DistinctBy(LibraryService.Key).Take(12).ToArray();
     private IReadOnlyList<RecommendedTrack> _recommendations = [];
     private bool _loading, _disposed;
     private string? _error;
@@ -47,7 +38,7 @@
     {
         _request?.Cancel(); var request = new CancellationTokenSource(TimeSpan.FromSeconds(35)); _request = request;
         _loading = true; _error = null;
-        try { var items = await Recommendations.DiscoverAsync(Player.CurrentTrack, Queue.Entries, 8, request.Token); if (!_disposed && _request == request) _recommendations = items; }
+        try { var items = await Recommendations.DiscoverAsync(Player.CurrentTrack, Queue.Entries, 16, request.Token); if (!_disposed && _request == request) _recommendations = items; }
         catch (OperationCanceledException) { if (!_disposed && _request == request) _error = "A busca demorou demais. Tente novamente."; }
         catch (Exception) { if (!_disposed && _request == request) _error = "Verifique sua conexão e tente atualizar as descobertas."; }
         finally { if (_request == request) { _request = null; _loading = false; } request.Dispose(); }

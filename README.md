@@ -1,14 +1,17 @@
 <div align="center">
-
-# Voxen
-
-**Your music. Both sources. One space.**
-
-A desktop music player for YouTube and SoundCloud, with a personal library and an atmosphere that follows your music.
-
-![Voxen desktop player](docs/images/voxen-studio.png)
-
+  <img src="docs/images/voxen-mark.svg" alt="Voxen" width="80" />
+  <h1>Voxen</h1>
+  <p><strong>Your next sound. Your own space.</strong></p>
+  <p>A desktop music player for Linux and Windows.<br />Discover music on YouTube and SoundCloud, shape your sound, and build your own library.</p>
+  <p>
+    <a href="https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml"><img src="https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml/badge.svg" alt="Build and tests" /></a>
+    <img src="https://img.shields.io/badge/platforms-Linux%20%7C%20Windows-f4bd91" alt="Linux and Windows" />
+    <img src="https://img.shields.io/badge/languages-PT%20%7C%20EN%20%7C%20ES-8bc3da" alt="Portuguese, English and Spanish" />
+  </p>
+  <p><a href="#what-you-can-do">Features</a> · <a href="#start-listening">Start listening</a> · <a href="#a-few-things-to-know">Good to know</a></p>
 </div>
+
+![Voxen listening workspace](docs/images/voxen-studio.png)
 
 ## What you can do
 
@@ -16,14 +19,14 @@ A desktop music player for YouTube and SoundCloud, with a personal library and a
 - **Make it yours.** Save tracks, mark favorites, create playlists, and revisit recently played music.
 - **Keep listening.** Build a queue, skip whenever you like, and enable *Keep discovering* for recommendations based on your listening and favorites.
 - **Shape your sound.** Choose Original, Bass boost, Voice, or Brightness, or adjust bass, midrange, and treble yourself.
-- **Set the mood.** Cover colors tint the interface while you listen. Turn them off to return to Summer Sky.
+- **Set the mood.** Artwork colors adapt the backgrounds, panels, controls, and text while you listen. Turn them off to return to Summer Sky.
 - **Choose your language.** Portuguese, English, and Spanish are available in Settings.
 
 ## Start listening
 
 1. Download the portable package for your system from a successful [build's artifacts](https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml). A GitHub account is required to download artifacts.
 2. Extract the whole folder and open **Voxen** on Linux or **Voxen.exe** on Windows. Keep the included files together.
-3. Open **Search**, enter a song or artist, and press **Listen now**.
+3. Open **Explore**, enter a song or artist, and press **Listen now**.
 4. Use the heart for favorites, the bookmark to save, and **+** to add a track to the queue.
 5. Open **Library** to create playlists. Open **Settings** to change language, sound, and cover colors.
 

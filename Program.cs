@@ -13,7 +13,7 @@ var builder = PhotinoBlazorApp.CreateBuilder(args);
 builder.Services.AddSingleton<AppPreferences>();
 builder.Services.AddSingleton<AppText>();
 builder.Services.AddSingleton<CoverPaletteService>();
-builder.Services.AddSingleton<YoutubeClient>();
+builder.Services.AddSingleton<YoutubeClient>(_ => YouTubeAudioClient.Create());
 builder.Services.AddSingleton<YouTubeMusicSearchService>();
 builder.Services.AddSingleton<YouTubeService>();
 builder.Services.AddSingleton<SoundCloudService>();

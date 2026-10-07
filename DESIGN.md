@@ -14,22 +14,22 @@ colors:
   primary-hover: "#ffd4b1"
 typography:
   headline:
-    fontFamily: 'Geist, Segoe UI, Noto Sans, sans-serif'
+    fontFamily: 'Roboto, Segoe UI, Noto Sans, sans-serif'
     fontSize: 'clamp(30px, 3.4vw, 48px)'
     fontWeight: 700
     lineHeight: 1.12
     letterSpacing: '-.035em'
   title:
-    fontFamily: 'Geist, Segoe UI, Noto Sans, sans-serif'
+    fontFamily: 'Roboto, Segoe UI, Noto Sans, sans-serif'
     fontSize: '16px'
     fontWeight: 600
     letterSpacing: '-.01em'
   body:
-    fontFamily: 'Geist, Segoe UI, Noto Sans, sans-serif'
+    fontFamily: 'Roboto, Segoe UI, Noto Sans, sans-serif'
     fontSize: '14px'
     lineHeight: 1.5
   label:
-    fontFamily: 'Inter, sans-serif'
+    fontFamily: 'Roboto, sans-serif'
     fontSize: '10px'
     fontWeight: 500
 rounded:
@@ -115,7 +115,7 @@ Azul noturno sustenta o fundo. Vidro azul (`surface`), ardósia elevada (`raised
 
 ## Typography
 
-Geist organiza títulos e texto; Inter distingue rótulos e números compactos. Ambas são WOFF2 locais com `font-display: swap`; Geist cobre pesos 400–700 e Inter 400–600. SVGs próprios fornecem ícones.
+Roboto organiza títulos e texto; Roboto distingue rótulos e números compactos. Ambas são WOFF2 locais com `font-display: swap`; Roboto cobre pesos 400–700 e Roboto 400–600. SVGs próprios fornecem ícones.
 
 Página usa headline responsivo, fixado em (30px) até 520px. Seções usam title; ideias usam (24px), destaque de ideias (28–40px) e (30px) no móvel. Título do resultado usa (28px), (22px) até 899px e (17px) até 520px, limitado a duas linhas. Metadados usam (10–13px), durações com números tabulares e parágrafos com entrelinha (1.65), máximo (70ch).
 
@@ -144,13 +144,13 @@ Painéis do shell usam container; header, busca e pequenas ações usam pill. De
 - **Botões:** ação pêssego sobre azul noturno, secundária ardósia com borda; altura mínima (42px), peso (650), texto (12px), padding (10px 16px), cápsula. Ícones usam control; reprodução central circular (38px), branco sobre azul noturno. Foco tem outline pêssego (2px), offset (4px). Controles de áudio indisponíveis usam opacidade (.45).
 - **Busca:** vidro mais leve, raio search, padding (5px 18px), input (42px); borda pêssego no foco. Input tem nome acessível e limpar explícito. A fonte padrão é Todas (YouTube + SoundCloud); opções individuais continuam disponíveis. Resultados chegam progressivamente, permanecem utilizáveis enquanto a outra fonte responde e convivem com avisos de falha parcial. Contagem e andamento usam status acessível. Antes da pesquisa, ideias curadas de músicas e ambientes levam a consultas reais; até três artistas distintos do histórico e favoritos locais aparecem como atalhos quando disponíveis. A composição de ideias passa de duas colunas a uma até (620px).
 - **Navegação:** itens mínimos (46px), padding (12px); estado ativo usa pêssego translúcido sem borda lateral. Trilho mantém nomes acessíveis.
-- **Selo de fonte:** cápsula Inter (10px, peso 550), fundo vermelho translúcido, borda `rgb(255 77 77 / .25)`; seletor de fonte usa estado `aria-pressed` e indisponibilidade explícita.
+- **Selo de fonte:** cápsula Roboto (10px, peso 550), fundo vermelho translúcido, borda `rgb(255 77 77 / .25)`; seletor de fonte usa estado `aria-pressed` e indisponibilidade explícita.
 - **Resultados e descoberta:** containers arredondados; destaque usa vidro `rgb(25 46 69 / .67)`, sem borda, cantos (16px), padding (24px). Linhas têm play, favoritar, salvar e adicionar à fila; coração e marcador usam pêssego com preenchimento translúcido no estado selecionado e `aria-pressed`. Hover das linhas usa `rgb(57 76 99 / .65)`. O destaque revela sua chegada por recorte (400ms, cubic-bezier(.16,1,.3,1)), de inset inferior (8%) ao recorte completo, com cantos (24px). Títulos longos truncam na linha, com texto completo no atributo title.
 - **Inspector e player:** capa atual, fila removível e seleção real. Autoplay é opt-in com toggle acessível, prepara um candidato durante a reprodução e continua quando ativado após o fim da fila; entradas manuais têm precedência. Faixa atual usa pêssego translúcido. Dock mantém play/pause, anterior/próxima, timeline e volume; stop desaparece até 899px. Avisos usam status/alert. SoundCloud público está disponível sem credenciais do usuário; a barra lateral identifica integração pública ou API oficial conforme a configuração.
 
 - **Biblioteca:** salvas, favoritos, playlists e histórico de escuta qualificada persistem como metadados locais. Seletores de coleção e playlists usam cápsulas ardósia, contagens discretas e pêssego translúcido com `aria-pressed`. Formulários rotulados criam e renomeiam playlists; exclusão e limpeza de histórico pedem confirmação inline. Estados vazios encaminham à busca.
 - **Descobertas pessoais:** listas de recomendações usam surface, hover raised, capas compactas e motivo em pêssego. Afinidade local por artista/título, favoritos e escutas orienta a seleção; as últimas 20 faixas ouvidas são excluídas, duplicatas são filtradas e há limite por artista para diversidade. Atualizar e tentar novamente são ações explícitas.
-- **Atalhos:** botão na barra abre ajuda não modal com teclas em Inter sobre raised; oferece busca, transporte, seek, volume, favoritos, salvar, fila e navegação. Atalhos respeitam campos de edição e exigem a janela em foco. O painel mantém fechamento explícito e Escape.
+- **Atalhos:** botão na barra abre ajuda não modal com teclas em Roboto sobre raised; oferece busca, transporte, seek, volume, favoritos, salvar, fila e navegação. Atalhos respeitam campos de edição e exigem a janela em foco. O painel mantém fechamento explícito e Escape.
 
 Transições de fundo/cor/borda usam (160ms, ease-out). O link principal das ideias desloca sua seta (4px) no hover com transição (200ms). `prefers-reduced-motion` remove transições, o recorte de chegada e o deslocamento da seta, mantendo rolagem automática. A atmosfera só muda com a capa; não há movimento decorativo contínuo.
 
@@ -179,3 +179,6 @@ Settings lives in the main content region, accessed by a gear in the topbar. It 
 The now-playing pane gives the real artwork and title priority, with save, source and artist-search actions. Artist metrics, biographies and credits are omitted when the provider does not supply them. Its memory point is the artwork changing the surrounding atmosphere: a sampled cover hue tints dark surfaces and a pale accent across controls. Text stays light for contrast. Turning cover colors off restores Summer Sky. Existing image crossfades respect reduced motion; no extra looping motion is introduced.
 
 Portuguese, English and Spanish share the same layout. Metadata such as song titles, artists and user playlist names stays in its original language. Search filters retain brand icons beside their names. YouTube search requests the Songs catalog rather than general videos; SoundCloud excludes explicit spoken-content metadata without claiming perfect classification.
+
+## Music browsing — October 2026
+Home and Explore follow the provided YouTube Music references: compact quick picks, cover shelves, mood chips, a labelled desktop rail and Roboto. Summer Sky remains the default wallpaper. Album colors drive every main surface, selection, accent and text token; YouTube/SoundCloud identities and error states preserve semantic meaning. Only track metadata is shown: no invented album dates or artist statistics. `/search` remains an alias of `/explore`.

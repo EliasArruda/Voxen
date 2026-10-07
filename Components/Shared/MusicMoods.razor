@@ -1,0 +1,6 @@
+<div class="music-moods" aria-label="@T["Momentos e gêneros"]">
+@foreach(var mood in Moods) { <a href="@("/explore?q="+Uri.EscapeDataString(mood.Query))">@T[mood.Label]</a> }
+</div>
+@code {
+    private static readonly (string Label,string Query)[] Moods = [("Para focar","lofi instrumental"),("Energia","energetic music"),("Relaxar","chill music"),("Treino","workout music"),("Romance","romantic music"),("Para dormir","ambient sleep music"),("Jazz","jazz instrumental"),("Rock","alternative rock music"),("Pop","pop music"),("Eletrônica","electronic music"),("MPB","MPB musica"),("Indie","indie music")];
+}

@@ -98,6 +98,7 @@ if (args.Contains("--soundcloud"))
     var bytes = new byte[4096];
     Check(await audio.ReadAsync(bytes, timeout.Token) > 0, "Live public SoundCloud resolves readable audio");
 }
+YouTubeAudioChecks.Run();
 Console.WriteLine("All checks passed.");
 
 sealed class FakeProvider(Func<string, CancellationToken, Task<IReadOnlyList<Track>>>? handler = null) : ITrackSearchProvider
