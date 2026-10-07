@@ -259,5 +259,20 @@
   "Rock": "Rock",
   "Pop": "Pop",
   "Indie": "Indie",
-  "MPB": "MPB"
+  "MPB": "MPB",
+  "Equalizador": "Ecualizador",
+  "Ajuste sete bandas de frequência e o balanço estéreo enquanto a música toca.": "Ajusta siete bandas de frecuencia y el balance estéreo mientras suena tu música.",
+  "Subgraves": "Subgraves",
+  "Corpo": "Cuerpo",
+  "Presença": "Presencia",
+  "Ar e brilho": "Aire",
+  "Balanço estéreo": "Balance estéreo",
+  "Esquerda / direita": "Izquierda / derecha",
+  "Centro": "Centro",
+  "Restaurar áudio original": "Restaurar audio",
+  "Acústico": "Acústico",
+  "Suave": "Suave",
+  "Sugestões de músicas": "Sugerencias de canciones",
+  "Ver todos os resultados": "Ver todos los resultados",
+  "O áudio foi interrompido antes do fim. Tente novamente para continuar ouvindo.": "El audio se interrumpió antes del final. Inténtalo de nuevo para seguir escuchando."
 }

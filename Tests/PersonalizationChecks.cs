@@ -26,6 +26,9 @@ internal static class PersonalizationChecks
         var voice=Gain(1000,new(0,8,0));var outside=Gain(100,new(0,8,0));Check(voice/outside>1.8,"Midrange control targets the voice band");
         Check(Gain(12000,new(0,0,8))/Gain(1000,new(0,0,8))>1.7,"Treble control shapes high frequencies");
         var stereo=Sine(100);for(var i=2;i<stereo.Length;i+=4)BinaryPrimitives.WriteInt16LittleEndian(stereo.AsSpan(i),0);new AudioToneProcessor(new(12,12,12)).Process(stereo);Check(Enumerable.Range(0,stereo.Length/4).All(i=>BinaryPrimitives.ReadInt16LittleEndian(stereo.AsSpan(i*4+2))==0),"Equalizer channels stay independent with bounded samples");
+        Check(Gain(32,new(SubBass:8))/Gain(1000,new(SubBass:8))>1.6,"Sub-bass control targets low-frequency energy");
+        Check(Gain(16000,new(Air:8))/Gain(1000,new(Air:8))>1.6,"Air band shapes high-frequency detail");
+        var balanced=Sine(1000);new AudioToneProcessor(new(Balance:1)).Process(balanced);Check(Enumerable.Range(0,balanced.Length/4).All(i=>BinaryPrimitives.ReadInt16LittleEndian(balanced.AsSpan(i*4))==0),"Stereo balance attenuates the left channel independently");
         Check(CoverPaletteService.Select([240,20,20,230,30,30,2,2,2,255,255,255]) is { R:>200,G:<50 },"Cover color extraction favors the visible color over black/white margins");
         using var spoken=JsonDocument.Parse("{\"genre\":\"Podcast\",\"title\":\"Episode 12\"}");using var song=JsonDocument.Parse("{\"genre\":\"Rock\",\"title\":\"One More Time\"}");
         Check(!MusicContentFilter.Allows(spoken.RootElement)&&MusicContentFilter.Allows(song.RootElement),"SoundCloud excludes explicit spoken-content metadata");

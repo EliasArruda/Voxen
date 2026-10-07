@@ -59,7 +59,7 @@
         {
             switch (action)
             {
-                case "search": Navigation.NavigateTo("/explore"); if (_module is not null) await _module.InvokeVoidAsync("focusSearch"); break;
+                case "search": if (_module is not null) await _module.InvokeVoidAsync("focusSearch"); break;
                 case "library": Navigation.NavigateTo("/library"); break;
                 case "home": Navigation.NavigateTo("/"); break;
                 case "toggle" when Player.CurrentTrack is not null && Player.Status != PlaybackStatus.Loading: await Player.ToggleAsync(); break;

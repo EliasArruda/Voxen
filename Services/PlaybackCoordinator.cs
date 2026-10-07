@@ -94,7 +94,7 @@ public sealed class PlaybackCoordinator : IDisposable
     }
     private async Task AdvanceAsync()
     {
-        if (FindingNext) return;
+        if (FindingNext || _player.Status != PlaybackStatus.Ended) return;
         if (_queue.Next is { } next) { await PlayEntryAsync(next.Key); return; }
         if (!Autoplay || _player.CurrentTrack is null || _queue.Entries.Count >= 200) return;
         var key = _queue.CurrentKey;

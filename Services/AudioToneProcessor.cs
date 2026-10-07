@@ -1,21 +1,23 @@
 using System.Buffers.Binary;
 namespace Voxen.Services;
 
-/// <summary>Three stereo biquads at the decoder's fixed 48 kHz rate, with boost headroom.</summary>
+/// <summary>Seven stereo biquads at the decoder's fixed 48 kHz rate, with boost headroom.</summary>
 public sealed class AudioToneProcessor
 {
-    private readonly Filter[,] _filters = new Filter[2, 3];
+    private readonly Filter[,] _filters = new Filter[2, 7];
     private readonly double _headroom;
+    private readonly double[] _balance;
     private readonly bool _flat;
     public AudioToneProcessor(AudioTone tone)
     {
         tone = tone.Safe(); _flat = tone == new AudioTone();
-        _headroom = Math.Pow(10, -(Math.Max(0,tone.Bass) + Math.Max(0,tone.Mid) + Math.Max(0,tone.Treble)) / 20);
+        var gains = new[]{tone.SubBass,tone.Bass,tone.LowMid,tone.Mid,tone.HighMid,tone.Treble,tone.Air};
+        _headroom = Math.Pow(10, -gains.Sum(gain=>Math.Max(0,gain)) / 20);
+        _balance = [1-Math.Max(0,tone.Balance),1+Math.Min(0,tone.Balance)];
         for (var channel = 0; channel < 2; channel++)
         {
-            _filters[channel, 0] = new Filter(100, tone.Bass, 0);
-            _filters[channel, 1] = new Filter(1000, tone.Mid, 1);
-            _filters[channel, 2] = new Filter(8000, tone.Treble, 2);
+            var frequencies=new[]{32d,100,300,1000,3000,8000,16000};
+            for(var band=0;band<7;band++)_filters[channel,band]=new Filter(frequencies[band],gains[band],band==1 ? 0 : band==5 ? 2 : 1);
         }
     }
     public void Process(Span<byte> pcm)
@@ -25,8 +27,8 @@ public sealed class AudioToneProcessor
             for (var channel = 0; channel < 2; channel++)
             {
                 var slice = pcm.Slice(offset + channel * 2, 2);
-                var sample = BinaryPrimitives.ReadInt16LittleEndian(slice) / 32768d * _headroom;
-                for (var band = 0; band < 3; band++) sample = _filters[channel, band].Apply(sample);
+                var sample = BinaryPrimitives.ReadInt16LittleEndian(slice) / 32768d * _headroom * _balance[channel];
+                for (var band = 0; band < 7; band++) sample = _filters[channel, band].Apply(sample);
                 BinaryPrimitives.WriteInt16LittleEndian(slice, (short)Math.Clamp(Math.Round(sample * 32768), short.MinValue, short.MaxValue));
             }
     }

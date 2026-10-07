@@ -26,11 +26,11 @@ export function initialize(callback) {
 export function focusSearch() {
     focusObserver?.disconnect(); clearTimeout(focusTimer);
     const settle = () => {
-        if (!document.getElementById('music-search')) return false;
+        if (!(document.getElementById('topbar-search') || document.getElementById('music-search'))) return false;
         // Route focus runs after the render batch. Apply the requested search focus after that navigation settles.
         focusObserver?.disconnect(); clearTimeout(focusTimer);
         focusTimer = setTimeout(() => {
-            const input = document.getElementById('music-search');
+            const input = (document.getElementById('topbar-search') || document.getElementById('music-search'));
             if (input) { input.focus(); input.select(); }
         }, 200);
         return true;

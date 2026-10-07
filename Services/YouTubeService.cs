@@ -18,7 +18,7 @@ public sealed class YouTubeService(YoutubeClient client, YouTubeMusicSearchServi
                 .ThenByDescending(item => item.Bitrate).FirstOrDefault()
                 ?? throw new InvalidOperationException("Esta faixa não oferece áudio público compatível.");
             var contentType = stream.Container == YoutubeExplode.Videos.Streams.Container.Mp4 ? "audio/mp4" : "audio/webm";
-            return new AudioResource(contentType, async token => await currentClient.Videos.Streams.GetAsync(stream, token), NativeInputUrl: stream.Url);
+            return new AudioResource(contentType, async token => await currentClient.Videos.Streams.GetAsync(stream, token));
         }
         catch (HttpRequestException e) when (e.StatusCode is System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.Unauthorized)
         {

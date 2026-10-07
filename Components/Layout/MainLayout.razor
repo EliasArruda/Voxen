@@ -25,7 +25,7 @@
     </aside>
     <header class="topbar">
         <a class="workspace-title" href="/" aria-label="@T["Voxen, início"]">Voxen</a>
-        <a class="global-search" href="/explore"><Icon Name="search" Size="19" /><span>@T["O que você quer ouvir?"]</span><kbd>Ctrl K</kbd></a>
+        <TopbarSearch />
         <div class="topbar-actions"><KeyboardShortcuts QueueToggle="ToggleInspector" DismissPanels="ClosePanels" ShowButton="false" /><button class="settings-trigger" aria-label="@T["Configurações"]" aria-expanded="@(_settings ? "true" : "false")" @onclick="ToggleSettings"><Blazicons.Blazicon Svg="Blazicons.FontAwesomeSolidIcon.Gear" width="19" height="19" class="fa-cog" aria-hidden="true" /><span>@T["Configurações"]</span></button>
             <button class="icon-button inspector-toggle" aria-label="@T["Mostrar fila"]" aria-controls="queue-panel" aria-expanded="@(_showInspector ? "true" : "false")" @onclick="ToggleInspector"><Icon Name="queue" /></button>
         </div>

@@ -1,9 +1,9 @@
 using System.Text.Json;
 namespace Voxen.Services;
 
-public sealed record AudioTone(double Bass = 0, double Mid = 0, double Treble = 0)
+public sealed record AudioTone(double Bass = 0, double Mid = 0, double Treble = 0, double SubBass = 0, double LowMid = 0, double HighMid = 0, double Air = 0, double Balance = 0)
 {
-    public AudioTone Safe() => new(Clamp(Bass), Clamp(Mid), Clamp(Treble));
+    public AudioTone Safe() => new(Clamp(Bass), Clamp(Mid), Clamp(Treble), Clamp(SubBass), Clamp(LowMid), Clamp(HighMid), Clamp(Air), double.IsFinite(Balance) ? Math.Clamp(Balance,-1,1) : 0);
     private static double Clamp(double value) => double.IsFinite(value) ? Math.Clamp(value, -12, 12) : 0;
 }
 public sealed record PreferenceData(string Language = "pt-BR", string Preset = "flat", AudioTone? Tone = null, bool CoverColors = true);
@@ -23,11 +23,11 @@ public sealed class AppPreferences : IDisposable
         try { if (File.Exists(path) && new FileInfo(path).Length < 16_384) Data = Validate(JsonSerializer.Deserialize<PreferenceData>(File.ReadAllText(path)) ?? new()); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException) { Error = "Não foi possível carregar as configurações."; }
     }
-    private static PreferenceData Validate(PreferenceData data) => data with { Language = data.Language is "pt-BR" or "en" or "es" ? data.Language : "pt-BR", Tone = (data.Tone ?? new()).Safe(), Preset = data.Preset is "flat" or "bass" or "voice" or "bright" or "custom" ? data.Preset : "flat" };
+    private static PreferenceData Validate(PreferenceData data) => data with { Language = data.Language is "pt-BR" or "en" or "es" ? data.Language : "pt-BR", Tone = (data.Tone ?? new()).Safe(), Preset = data.Preset is "flat" or "bass" or "voice" or "bright" or "custom" or "rock" or "electronic" or "acoustic" or "soft" ? data.Preset : "flat" };
     public void Language(string value) => Save(Data with { Language = value });
     public void CoverColors(bool value) => Save(Data with { CoverColors = value });
     public void Equalizer(AudioTone tone) => Save(Data with { Preset = "custom", Tone = tone.Safe() }, defer: true);
-    public void Preset(string value) => Save(Data with { Preset = value, Tone = value switch { "bass" => new(8, -2, 1), "voice" => new(-3, 4, 2), "bright" => new(0, 0, 5), _ => new() } });
+    public void Preset(string value) => Save(Data with { Preset = value, Tone = value switch { "bass" => new(8, -2, 1), "voice" => new(-3, 4, 2), "bright" => new(0, 0, 4, Air:2), "rock" => new(3,-1,2,SubBass:1,LowMid:-2,HighMid:2,Air:1), "electronic" => new(4,-1,2,SubBass:4,LowMid:-2,Air:2), "acoustic" => new(-1,2,1,SubBass:-2,HighMid:2,Air:1), "soft" => new(-2,1,-3,SubBass:-3,HighMid:-1,Air:-3), _ => new() } });
     private void Save(PreferenceData data, bool defer = false)
     {
         CancellationTokenSource? pending=null;

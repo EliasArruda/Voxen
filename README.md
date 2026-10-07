@@ -18,7 +18,7 @@
 - **Find your next song.** Search both sources at once, or choose YouTube or SoundCloud. YouTube search focuses on the YouTube Music song catalog.
 - **Make it yours.** Save tracks, mark favorites, create playlists, and revisit recently played music.
 - **Keep listening.** Build a queue, skip whenever you like, and enable *Keep discovering* for recommendations based on your listening and favorites.
-- **Shape your sound.** Choose Original, Bass boost, Voice, or Brightness, or adjust bass, midrange, and treble yourself.
+- **Shape your sound.** Use eight presets, adjust seven frequency bands from sub-bass to air, and set stereo balance. Changes apply while music plays.
 - **Set the mood.** Artwork colors adapt the entire layout, including the sidebar and player controls. The Linux desktop canvas is transparent. Turn them off to restore the original blue glass.
 - **Choose your language.** Portuguese, English, and Spanish are available in Settings.
 
