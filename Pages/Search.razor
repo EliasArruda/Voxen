@@ -1,9 +1,10 @@
 @page "/search"
+@page "/explore"
 @implements IDisposable
 @inject Func<SearchSession> CreateSession
 @inject MusicProviders Providers
 @inject Microsoft.Extensions.Logging.ILogger<SearchSession> Logger
-<div class="page-heading"><div><h1>@T["Busca universal"]</h1><p class="page-description">@T["Encontre músicas e artistas. Descubra seu próximo som."]</p></div><span role="img" title="@SourceLabel" aria-label="@SourceLabel" class="source-badge @(_source is null ? "all-sources" : _source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(_source is null ? "search" : _source == TrackSource.YouTube ? "youtube" : "cloud")" Size="14" /></span></div>
+<div class="page-heading"><div><h1>@T["Explorar"]</h1><p class="page-description">@T["Encontre músicas e artistas. Descubra seu próximo som."]</p></div><span role="img" title="@SourceLabel" aria-label="@SourceLabel" class="source-badge @(_source is null ? "all-sources" : _source == TrackSource.SoundCloud ? "soundcloud-badge" : "")"><Icon Name="@(_source is null ? "search" : _source == TrackSource.YouTube ? "youtube" : "cloud")" Size="14" /></span></div>
 <div class="source-selector" aria-label="@T["Fonte da pesquisa"]"><button aria-pressed="@(_source is null ? "true" : "false")" @onclick="() => ChangeSource(null)"><Icon Name="music" Size="16" />@T["Todos"]</button><button aria-pressed="@(_source == TrackSource.YouTube ? "true" : "false")" @onclick="() => ChangeSource(TrackSource.YouTube)"><Icon Name="youtube" Size="16" />Youtube</button><button aria-pressed="@(_source == TrackSource.SoundCloud ? "true" : "false")" @onclick="() => ChangeSource(TrackSource.SoundCloud)"><Icon Name="cloud" Size="16" />Soundcloud</button></div>
 <SearchInput Value="@_input" ValueChanged="OnInput" />
 <section class="search-results" aria-busy="@(Session.Status is SearchStatus.Waiting or SearchStatus.Loading ? "true" : "false")">

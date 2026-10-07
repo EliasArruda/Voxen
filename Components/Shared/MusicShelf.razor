@@ -1,0 +1,22 @@
+@inject PlayerService Player
+@inject PlaybackCoordinator Playback
+<section class="music-shelf" aria-label="@Title">
+    <div class="section-heading"><h2>@Title</h2>@if(Link is not null) { <a class="text-button" href="@Link">@T["Ver mais"]<Icon Name="arrow" Size="16" /></a> }</div>
+    <div class="cover-shelf">
+        @foreach(var track in Tracks)
+        {
+            <div class="shelf-item" @key="LibraryService.Key(track)">
+                <button class="cover-play" disabled="@(!Player.Ready)" @onmouseenter="() => Player.PrepareAsync(track)" @onfocus="() => Player.PrepareAsync(track)" @onclick="() => Playback.PlayTrackAsync(track)" aria-label="@T.Format("Reproduzir {0}", track.Title)">
+                    @if(!string.IsNullOrWhiteSpace(track.ThumbnailUrl)) { <img src="@track.ThumbnailUrl" alt="" loading="lazy" referrerpolicy="no-referrer" /> } else { <Icon Name="music" Size="40" /> }
+                    <span class="cover-play-icon"><Icon Name="play" Size="26" /></span>
+                </button>
+                <strong title="@track.Title">@track.Title</strong><span title="@track.Artist">@track.Artist</span>
+            </div>
+        }
+    </div>
+</section>
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter, EditorRequired] public IReadOnlyList<Track> Tracks { get; set; } = [];
+    [Parameter] public string? Link { get; set; }
+}

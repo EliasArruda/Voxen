@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {applyPalette} from '../wwwroot/Scripts/appearance.js';
+const properties=new Map();
+globalThis.document={documentElement:{dataset:{},style:{setProperty(key,value,priority=''){assert.equal(priority,'');assert.match(value,/^rgb\(/);properties.set(key,value);},removeProperty(key){properties.delete(key);}}}};
+applyPalette({r:180,g:90,b:40},'pt-BR');
+assert.equal(document.documentElement.dataset.albumTheme,'true');
+assert.equal(document.documentElement.lang,'pt-BR');
+assert.equal(properties.size,10);
+assert.match(properties.get('--album-tint'),/^rgb\(/);
+const previous=properties.get('--surface');
+applyPalette({r:20,g:90,b:180},'en');
+assert.notEqual(properties.get('--surface'),previous);
+assert.notEqual(properties.get('--ink'),properties.get('--muted'));
+applyPalette(null,'es',false);
+assert.equal(properties.size,0);
+assert.equal(document.documentElement.dataset.albumTheme,undefined);
+assert.equal(document.documentElement.dataset.coverColors,'false');
+console.log('PASS Artwork theme updates every token and restores the default palette without stale colors');

@@ -51,7 +51,7 @@
         }
     }
     else
-    { <div class="empty-state"><span class="empty-symbol"><Icon Name="library" Size="30" /></span><h3>@EmptyTitle</h3><p>@EmptyText</p><a class="secondary-button" href="/search">@T["Buscar músicas"]</a></div> }
+    { <div class="empty-state"><span class="empty-symbol"><Icon Name="library" Size="30" /></span><h3>@EmptyTitle</h3><p>@EmptyText</p><a class="secondary-button" href="/explore">@T["Buscar músicas"]</a></div> }
 </section>
 @code {
     [SupplyParameterFromQuery(Name = "view")] public string? InitialView { get; set; }
