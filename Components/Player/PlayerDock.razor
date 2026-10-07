@@ -1,30 +1,56 @@
-@implements IDisposable
+@implements IAsyncDisposable
+@using Blazicons
+@using Microsoft.JSInterop
 @inject PlayerService Player
 @inject ListeningHistoryService History
 @inject QueueService Queue
 @inject PlaybackCoordinator Playback
 @inject Microsoft.JSInterop.IJSRuntime JS
 <footer class="player-dock" aria-label="Player de música">
-    <div class="dock-track"><span class="dock-art">@if (Player.CurrentTrack is { ThumbnailUrl.Length: > 0 } track) { <img src="@track.ThumbnailUrl" alt="" referrerpolicy="no-referrer" /> } else { <Icon Name="music" Size="22" /> }</span><div><strong title="@Player.CurrentTrack?.Title">@(Player.CurrentTrack?.Title ?? "Seu próximo som está aqui")</strong><small>@(Player.CurrentTrack?.Artist ?? "Busque uma faixa para começar") @if (Player.CurrentTrack is { } source) { <a href="@source.Url" target="_blank" rel="noopener noreferrer" title="Abrir na fonte original">· @source.Source</a> }</small></div></div>
+    <div class="dock-track"><span class="dock-art">@if (Player.CurrentTrack is { ThumbnailUrl.Length: > 0 } track) { <img src="@track.ThumbnailUrl" alt="" referrerpolicy="no-referrer" /> } else { <Icon Name="music" Size="22" /> }</span><div><strong title="@Player.CurrentTrack?.Title">@(Player.CurrentTrack?.Title ?? "Seu próximo som está aqui")</strong><small>@(Player.CurrentTrack?.Artist ?? "Busque uma faixa para começar") @if (Player.CurrentTrack is { } source) { <a href="@source.Url" target="_blank" rel="noopener noreferrer" title="Abrir no @source.Source" aria-label="Abrir no @source.Source"><Icon Name="@(source.Source == TrackSource.SoundCloud ? "cloud" : "youtube")" Size="14" /></a> }</small></div></div>
     <div class="dock-transport">
         <div class="transport-buttons">
             <button class="icon-button" disabled="@(Queue.Previous is null || !Player.Ready)" aria-label="Faixa anterior" @onclick="Playback.PreviousAsync"><Icon Name="previous" Size="18" /></button>
             <button class="play-button" disabled="@(Player.CurrentTrack is null || Player.Status == PlaybackStatus.Loading)" aria-label="@(Player.Status == PlaybackStatus.Playing ? "Pausar" : Player.Status == PlaybackStatus.Error ? "Tentar reproduzir novamente" : "Reproduzir")" @onclick="Player.ToggleAsync"><Icon Name="@(Player.Status == PlaybackStatus.Playing ? "pause" : "play")" Size="18" /></button>
-            <button class="icon-button" disabled="@(Queue.Next is null || !Player.Ready)" aria-label="Próxima faixa" @onclick="Playback.NextAsync"><Icon Name="next" Size="18" /></button>
+            <button class="icon-button" disabled="@(Player.CurrentTrack is null || !Player.Ready || Playback.FindingNext)" aria-label="Próxima faixa" @onclick="Playback.NextAsync"><Icon Name="next" Size="18" /></button>
             <button class="icon-button stop-button" disabled="@(Player.CurrentTrack is null)" aria-label="Parar reprodução" @onclick="Playback.StopAsync"><Icon Name="stop" Size="15" /></button>
         </div>
-        <div class="dock-timeline"><span>@Time(Player.Position)</span><input aria-label="Posição da faixa" type="range" min="0" max="@Math.Max(1, Player.Duration)" step="1" value="@Player.Position" disabled="@(Player.Duration <= 0)" @onchange="Seek" /><span>@Time(Player.Duration)</span></div>
+        <div class="dock-timeline"><span>@Time(Player.Position)</span><input aria-label="Posição da faixa" type="range" min="0" max="@Math.Max(1, Player.Duration)" step="1" value="@Player.Position" style="--progress: @Progress%" disabled="@(Player.Duration <= 0)" @onchange="Seek" /><span>@Time(Player.Duration)</span></div>
     </div>
-    <div class="dock-output"><Icon Name="volume" Size="18" /><input aria-label="Volume" type="range" min="0" max="100" value="@(Player.Volume * 100)" @oninput="Volume" /><span>@((int)(Player.Volume * 100))%</span></div>
+    <div class="dock-output"><button class="icon-button mute-button" aria-label="@(Player.Volume > 0 ? "Silenciar áudio" : "Restaurar áudio")" aria-pressed="@(Player.Volume == 0 ? "true" : "false")" @onclick="Player.ToggleMuteAsync"><Blazicon Svg="@(Player.Volume > 0 ? FontAwesomeSolidIcon.VolumeHigh : FontAwesomeSolidIcon.VolumeXmark)" Size="18px" /></button><input @ref="_volumeInput" aria-label="Volume" type="range" min="0" max="100" step="1" /><span @ref="_volumeOutput"></span></div>
     @if (Player.Status == PlaybackStatus.Loading) { <p class="player-notice" role="status">@Player.LoadingMessage</p> }
     @if (Player.Error is not null) { <p class="player-notice error-notice" role="alert">@Player.Error</p> }
 </footer>
 @code {
-    protected override void OnInitialized() { Player.Changed += Refresh; Queue.Changed += Refresh; }
-    protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) await Player.InitializeAsync(JS, work => InvokeAsync(work)); }
+    protected override void OnInitialized() { Player.Changed += Refresh; Queue.Changed += Refresh; Playback.Changed += Refresh; }
+    private ElementReference _volumeInput, _volumeOutput;
+    private IJSObjectReference? _controlsModule, _volumeControl;
+    private DotNetObjectReference<PlayerDock>? _reference;
+    private string Progress => (Player.Duration > 0 ? Math.Clamp(Player.Position / Player.Duration * 100, 0, 100) : 0).ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Player.InitializeAsync(JS, work => InvokeAsync(work));
+            _controlsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./Scripts/player-controls.js");
+            _reference = DotNetObjectReference.Create(this);
+            _volumeControl = await _controlsModule.InvokeAsync<IJSObjectReference>("initializeVolume", _volumeInput, _volumeOutput, _reference, Player.Volume, Player.VolumeRevision);
+        }
+        else if (_volumeControl is not null) await _volumeControl.InvokeVoidAsync("sync", Player.Volume, Player.VolumeRevision);
+    }
+    [JSInvokable] public Task SetVolume(double value, long revision) => InvokeAsync(() => Player.SetVolumeFromControlAsync(value, revision));
     private void Refresh() => _ = InvokeAsync(StateHasChanged);
     private Task Seek(ChangeEventArgs e) => double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value) ? Player.SeekAsync(value) : Task.CompletedTask;
-    private Task Volume(ChangeEventArgs e) => double.TryParse(e.Value?.ToString(), out var value) ? Player.SetVolumeAsync(value / 100) : Task.CompletedTask;
     private static string Time(double seconds) => seconds >= 3600 ? TimeSpan.FromSeconds(seconds).ToString(@"h\:mm\:ss") : TimeSpan.FromSeconds(seconds).ToString(@"m\:ss");
-    public void Dispose() { Player.Changed -= Refresh; Queue.Changed -= Refresh; }
+    public async ValueTask DisposeAsync()
+    {
+        Player.Changed -= Refresh; Queue.Changed -= Refresh; Playback.Changed -= Refresh;
+        try
+        {
+            if (_volumeControl is not null) { await _volumeControl.InvokeVoidAsync("dispose"); await _volumeControl.DisposeAsync(); }
+            if (_controlsModule is not null) await _controlsModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        _reference?.Dispose();
+    }
 }

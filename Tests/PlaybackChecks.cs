@@ -143,6 +143,59 @@ internal static class PlaybackChecks
         await Task.Yield();
         Check(player.Status == PlaybackStatus.Playing, "Successful playback cancels startup deadline");
     }
+    public static async Task ManualNextAndMuteAsync()
+    {
+        var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(new byte[10])));
+        await using var proxy = new AudioProxy();
+        await using var player = new PlayerService(new TestAudio(resource), proxy);
+        var js = new TestJS(); await player.InitializeAsync(js);
+        var queue = new QueueService();
+        using var coordinator = new PlaybackCoordinator(queue, player, new RecommendationService(new RecommendationProvider()));
+        await coordinator.PlayTrackAsync(Track("original"));
+        await player.OnAudioEvent(js.Module.Version, "playing", 1, 100);
+        await coordinator.NextAsync();
+        Check(!coordinator.Autoplay && player.CurrentTrack?.Id != "original" && queue.Entries.Count == 2,
+            "Manual next finds another track before ending without enabling autoplay");
+        coordinator.Add(Track("queued"));
+        await coordinator.NextAsync();
+        Check(player.CurrentTrack?.Id == "queued", "Manual next prefers the existing queue");
+        await player.SetVolumeAsync(.43); var revision = player.VolumeRevision; await player.ToggleMuteAsync();
+        await player.SetVolumeFromControlAsync(.2, revision);
+        Check(player.Volume == 0, "Mute sets volume to zero and rejects pending older slider changes");
+        await player.ToggleMuteAsync();
+        Check(Math.Abs(player.Volume - .43) < .001, "Unmute restores the last nonzero volume");
+        foreach (var stop in new[] { true, false })
+        {
+            await using var otherProxy = new AudioProxy();
+            await using var other = new PlayerService(new TestAudio(resource), otherProxy);
+            await other.InitializeAsync(new TestJS());
+            var pending = new DelayedRecommendation();
+            var otherQueue = new QueueService();
+            using var next = new PlaybackCoordinator(otherQueue, other, new RecommendationService(pending));
+            await next.PlayTrackAsync(Track("old"));
+            var requesting = next.NextAsync(); await pending.Started.Task;
+            if (stop) await next.StopAsync(); else await next.PlayTrackAsync(Track("manual"));
+            Check(!next.FindingNext, "Manual choice immediately clears pending-next state");
+            pending.Release.SetResult([Track("late")]); await requesting;
+            Check(other.CurrentTrack?.Id == (stop ? null : "manual"), "Late manual-next result cannot override stop or selection");
+        }
+    }
+    public static async Task EndDuringManualNextAsync()
+    {
+        var resource = new AudioResource("audio/wav", _ => Task.FromResult<Stream>(new MemoryStream(new byte[10])));
+        await using var proxy = new AudioProxy();
+        await using var player = new PlayerService(new TestAudio(resource), proxy);
+        var js = new TestJS(); await player.InitializeAsync(js);
+        var provider = new DelayedRecommendation(); var queue = new QueueService();
+        using var playback = new PlaybackCoordinator(queue, player, new RecommendationService(provider));
+        await playback.PlayTrackAsync(Track("original"));
+        var requesting = playback.NextAsync(); await provider.Started.Task;
+        playback.Add(Track("queued"));
+        await player.OnAudioEvent(js.Module.Version, "ended", 100, 100);
+        provider.Release.SetException(new HttpRequestException("Fixture failure"));
+        await requesting;
+        Check(player.CurrentTrack?.Id == "queued", "Queued track advances after ending during a failed manual-next request");
+    }
     sealed class DelayedRecommendation : ITrackSearchProvider
     {
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

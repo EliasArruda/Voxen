@@ -30,7 +30,7 @@
     <aside id="queue-panel" class="right-inspector" aria-label="Fila de reprodução">
         <header class="inspector-heading"><Icon Name="wave" Size="18" /><h2>Agora tocando</h2><button class="icon-button inspector-close" aria-label="Fechar fila" @onclick="ToggleInspector"><Icon Name="close" Size="17" /></button></header>
         <QueuePanel />
-        <div class="provider-section"><h3>Fontes de música</h3><div><span class="provider-name"><Icon Name="youtube" Size="17" />YouTube</span><span class="provider-state">Disponível</span></div><div><span class="provider-name"><Icon Name="cloud" Size="17" />SoundCloud</span><span class="coming-soon">@(Providers.SoundCloudOfficial ? "API oficial" : "Integração pública")</span></div></div>
+        <div class="provider-section"><h3>Fontes de música</h3><div><span class="provider-name" title="Youtube"><Icon Name="youtube" Size="20" /><span class="sr-only">Youtube</span></span><span class="provider-state">Disponível</span></div><div><span class="provider-name" title="Soundcloud"><Icon Name="cloud" Size="20" /><span class="sr-only">Soundcloud</span></span><span class="coming-soon">@(Providers.SoundCloudOfficial ? "API oficial" : "Integração pública")</span></div></div>
     </aside>
     <PlayerDock />
 </div>

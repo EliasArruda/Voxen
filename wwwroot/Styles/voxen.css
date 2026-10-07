@@ -572,3 +572,19 @@ h1 { font-size: clamp(30px,3.4vw,48px); line-height: 1.12; font-weight: 700; let
     .player-dock { padding: 10px 12px; }
 }
 @supports not (backdrop-filter: blur(14px)) { .sidebar, main, .right-inspector, .topbar, .player-dock { background: rgb(15 29 49 / .94); } }
+
+/* Native range inputs keep keyboard/seek semantics while the timeline has no handle. */
+.dock-timeline input { appearance: none; -webkit-appearance: none; height: 24px; background: transparent; cursor: pointer; }
+.dock-timeline input::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(to right,var(--primary) 0%,var(--primary) var(--progress),rgb(208 220 238 / .25) var(--progress),rgb(208 220 238 / .25) 100%); }
+.dock-timeline input::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 1px; height: 24px; margin-top: -10px; background: transparent; border: 0; box-shadow: none; }
+.dock-timeline input::-moz-range-track { height: 4px; border-radius: 999px; background: rgb(208 220 238 / .25); }
+.dock-timeline input::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--primary); }
+.dock-timeline input::-moz-range-thumb { width: 1px; height: 24px; background: transparent; border: 0; }
+.dock-output { gap: 8px; }
+.dock-output > span { width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+.soundcloud-icon, .soundcloud-badge { color: #ffbc55; }
+.source-badge { min-width: 26px; min-height: 24px; padding: 3px 6px; }
+
+@media (min-width: 900px) { .track-header, .track-row { grid-template-columns: 30px 36px minmax(0,2fr) minmax(0,1fr) 34px 40px 102px; } }
+
+.dock-track small a { display: inline-flex; align-items: center; margin-left: 6px; vertical-align: middle; }

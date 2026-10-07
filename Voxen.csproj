@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Blazicons.FontAwesome" Version="4.0.5" />
     <PackageReference Include="PhotinoX.Blazor" Version="5.3.3" />
     <PackageReference Include="ppy.SDL3-CS" Version="2026.1002.1" />
     <PackageReference Include="YoutubeExplode" Version="6.6.2" />

@@ -76,6 +76,8 @@ await AudioPreparationChecks.RunAsync();
 await CombinedSearchChecks.RunAsync();
 await PlaybackChecks.StartupDeadlineAsync();
 await PlaybackChecks.RunAsync();
+await PlaybackChecks.ManualNextAndMuteAsync();
+await PlaybackChecks.EndDuringManualNextAsync();
 await SoundCloudChecks.RunAsync();
 await SoundCloudWebChecks.RunAsync();
 await PlaybackChecks.RecommendationRaceChecksAsync();

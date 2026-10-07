@@ -165,3 +165,9 @@ Transições de fundo/cor/borda usam (160ms, ease-out). O link principal das ide
 - Don't substituir a paisagem aprovada por gradientes abstratos como identidade principal.
 - Don't adicionar blur a cada linha ou animação contínua aos campos de cor.
 - Don't ocultar estados de erro das fontes públicas ou prometer reprodução offline a partir dos metadados salvos.
+
+## Player controls refinement
+
+The seek timeline uses a 4px peach filled track with a transparent 1px handle, preserving the native range input and keyboard semantics. Fill reflects playback position, replacing the rainbow track. Volume lives in a client-owned slider: playback rerenders do not overwrite its value during dragging or pending changes; updates are serialized and coalesced. Percent text has a fixed width to prevent layout jitter. The volume button and M share mute/restore state. Outside text fields, Space controls playback even with buttons or sliders focused; slider arrows retain native behavior. Route changes do not focus h1.
+
+Source badges contain only accessible, titled icons. SoundCloud uses the official Font Awesome brand silhouette in orange-yellow #ffbc55; regular/solid volume controls use Blazicons.FontAwesome. Search filters are plain labels Todos, Youtube, Soundcloud. The Summer Sky palette, shell, typography and layout remain unchanged.
