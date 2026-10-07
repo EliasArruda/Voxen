@@ -63,10 +63,10 @@ public sealed class NativeAudioService : IAsyncDisposable
         }
         throw new FileNotFoundException("FFmpeg não encontrado. Use o pacote portátil do Voxen ou configure VOXEN_FFMPEG_PATH.");
     }
-    public async Task LoadAsync(string url, long version, double duration)
+    public async Task LoadAsync(string url, long version, double duration, double startPosition = 0)
     {
         await _commands.WaitAsync();
-        try { await StopCoreAsync(); _url = url; _version = version; _duration = duration; StartDecoder(0, false); }
+        try { await StopCoreAsync(); _url = url; _version = version; _duration = duration; StartDecoder(Math.Max(0, startPosition), false); }
         finally { _commands.Release(); }
     }
     public async Task StopAsync(long version)
@@ -134,15 +134,18 @@ public sealed class NativeAudioService : IAsyncDisposable
             }
             await process.WaitForExitAsync(token); var diagnostic = await errors;
             if (process.ExitCode != 0 || !started) { Emit("error", FailureStatus(diagnostic)); return; }
-            _duration = _start + (double)_written / BytesPerSecond;
+            var decodedEnd = _start + (double)_written / BytesPerSecond;
             FlushDevice();
             while (Queued() > 0) { if (lastReport.ElapsedMilliseconds >= 250) { Emit("time"); lastReport.Restart(); } await Task.Delay(30, token); }
-            token.ThrowIfCancellationRequested(); Emit("ended");
+            token.ThrowIfCancellationRequested();
+            if(IsPrematureEnd(_duration,decodedEnd)) { Emit("interrupted");return; }
+            _duration=decodedEnd;Emit("ended");
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception) { if (!token.IsCancellationRequested) Emit("error"); }
         finally { pinned.Free(); if (!process.HasExited) process.Kill(entireProcessTree: true); try { await errors; } catch (OperationCanceledException) { } }
     }
+    public static bool IsPrematureEnd(double expected, double decoded) => expected > 0 && decoded >= 0 && expected-decoded > Math.Max(3,expected*.02);
     public static int? FailureStatus(string diagnostic)
     {
         var match=System.Text.RegularExpressions.Regex.Match(diagnostic,@"\b(?:HTTP error|Server returned)\s+(401|403|404|410)\b",System.Text.RegularExpressions.RegexOptions.IgnoreCase);

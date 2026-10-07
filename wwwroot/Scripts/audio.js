@@ -4,7 +4,7 @@ function detach() {
     clearTimeout(loadingTimer);
     hls?.destroy(); hls = undefined;
     if (!audio) return;
-    sourceNode?.disconnect();for(const node of toneNodes)node.disconnect();toneNodes=[];sourceNode=undefined;
+    sourceNode?.disconnect();for(const node of toneNodes)node.disconnect();toneNodes=[];sourceNode=undefined;for(const node of balanceNodes)node.disconnect();balanceNodes=[];
     const old = audio; audio = undefined;
     old.pause(); old.removeAttribute('src'); old.load();
 }
@@ -62,23 +62,31 @@ export function seek(seconds) { if (audio && Number.isFinite(audio.duration)) au
 export function volume(value) { level = value; if (audio) audio.volume = value; }
 export function dispose() { version++; detach(); void context?.close();context=undefined; callback = undefined; }
 
-let toneSettings={bass:0,mid:0,treble:0}, context, sourceNode, toneNodes=[];
+let toneSettings={bass:0,mid:0,treble:0}, context, sourceNode, toneNodes=[], balanceNodes=[];
+const bands=[["subBass",32,"peaking"],["bass",100,"lowshelf"],["lowMid",300,"peaking"],["mid",1000,"peaking"],["highMid",3000,"peaking"],["treble",8000,"highshelf"],["air",16000,"peaking"]];
 export function tone(settings) {
     toneSettings=settings;
     if (!context) return;
-    const values=[settings.bass,settings.mid,settings.treble];
-    for(let i=0;i<3;i++)toneNodes[i]?.gain.setTargetAtTime(values[i],context.currentTime,.04);
+    const values=bands.map(([key])=>settings[key]||0);
+    for(let i=0;i<7;i++)toneNodes[i]?.gain.setTargetAtTime(values[i],context.currentTime,.04);
     const headroom=Math.pow(10,-values.reduce((sum,gain)=>sum+Math.max(0,gain),0)/20);
-    toneNodes[3]?.gain.setTargetAtTime(headroom,context.currentTime,.04);
+    toneNodes[7]?.gain.setTargetAtTime(headroom,context.currentTime,.04);
+    const balance=settings.balance||0;
+    balanceNodes[1]?.gain.setTargetAtTime(1-Math.max(0,balance),context.currentTime,.04);
+    balanceNodes[2]?.gain.setTargetAtTime(1+Math.min(0,balance),context.currentTime,.04);
 }
 function attachTone(current) {
     const AudioContext=globalThis.AudioContext || globalThis.webkitAudioContext;
     if (!AudioContext) return;
     context ||= new AudioContext();sourceNode=context.createMediaElementSource(current);
-    const bass=context.createBiquadFilter();bass.type='lowshelf';bass.frequency.value=100;
-    const mid=context.createBiquadFilter();mid.type='peaking';mid.frequency.value=1000;mid.Q.value=.707;
-    const treble=context.createBiquadFilter();treble.type='highshelf';treble.frequency.value=8000;
-    const headroom=context.createGain();toneNodes=[bass,mid,treble,headroom];
-    sourceNode.connect(bass);bass.connect(mid);mid.connect(treble);treble.connect(headroom);headroom.connect(context.destination);
+    toneNodes=bands.map(([,frequency,type])=>{const node=context.createBiquadFilter();node.type=type;node.frequency.value=frequency;node.Q.value=.707;return node;});
+    toneNodes.push(context.createGain());
+    let previous=sourceNode;for(const node of toneNodes){previous.connect(node);previous=node;}
+    if(context.createChannelSplitter && context.createChannelMerger) {
+        previous.channelCount=2;previous.channelCountMode='explicit';previous.channelInterpretation='speakers';
+        const splitter=context.createChannelSplitter(2), left=context.createGain(), right=context.createGain(), merger=context.createChannelMerger(2);
+        previous.connect(splitter);splitter.connect(left,0);splitter.connect(right,1);left.connect(merger,0,0);right.connect(merger,0,1);merger.connect(context.destination);
+        balanceNodes=[splitter,left,right,merger];
+    }else previous.connect(context.destination);
     tone(toneSettings);void context.resume().catch(()=>{});
 }
