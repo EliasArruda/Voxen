@@ -5,3 +5,8 @@ public interface IAudioSourceProvider
 {
     Task<AudioResource> ResolveAsync(Track track, CancellationToken cancellationToken);
 }
+
+public interface IAudioSourceInvalidation
+{
+    void Invalidate(Track track);
+}

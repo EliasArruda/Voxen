@@ -8,10 +8,10 @@ namespace Voxen.Services;
 /// <summary>Retains public audio formats before YoutubeExplode validates every media candidate.</summary>
 public static class YouTubeAudioClient
 {
-    public static YoutubeClient Create(HttpMessageHandler? handler = null) => new(new HttpClient(new AudioMetadataHandler(handler ?? new HttpClientHandler
-    {
-        AutomaticDecompression = DecompressionMethods.All
-    })));
+    private static readonly Lazy<HttpClient> Shared = new(() => new HttpClient(new AudioMetadataHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All })));
+    public static YoutubeClient Create(HttpMessageHandler? handler = null) => handler is null
+        ? new YoutubeClient(Shared.Value)
+        : new YoutubeClient(new HttpClient(new AudioMetadataHandler(handler)));
 
     public static string AudioMetadata(string json)
     {

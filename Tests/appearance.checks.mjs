@@ -5,7 +5,7 @@ globalThis.document={documentElement:{dataset:{},style:{setProperty(key,value,pr
 applyPalette({r:180,g:90,b:40},'pt-BR');
 assert.equal(document.documentElement.dataset.albumTheme,'true');
 assert.equal(document.documentElement.lang,'pt-BR');
-assert.equal(properties.size,10);
+assert.equal(properties.size,12);
 assert.match(properties.get('--album-tint'),/^rgb\(/);
 const previous=properties.get('--surface');
 applyPalette({r:20,g:90,b:180},'en');
