@@ -1,3 +1,5 @@
+Desktop fixes in this version: the existing Voxen icon is now included in the executable, native window and installer. Windows starts as a graphical application without an extra command prompt. Linux application-menu shortcuts use the packaged icon.
+
 Discover songs on YouTube and SoundCloud, create your library and playlists, and customize your sound with a seven-band equalizer.
 
 - **Windows:** download the `windows-x64-setup.exe` installer and run it. A portable ZIP is also available. Requires Microsoft Edge WebView2 Runtime.

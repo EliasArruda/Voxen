@@ -4,6 +4,8 @@ import argparse
 from pathlib import Path
 import re
 import shutil
+import subprocess
+import sys
 import tarfile
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -19,6 +21,7 @@ source = args.input.resolve()
 executable = source / ('Voxen' if args.rid == 'linux-x64' else 'Voxen.exe')
 if not executable.is_file():
     parser.error(f'Published executable missing: {executable}')
+subprocess.run([sys.executable, str(root / 'scripts/verify_desktop.py'), '--rid', args.rid, '--input', str(source)], check=True)
 args.output.mkdir(parents=True, exist_ok=True)
 name = f'Voxen-{args.version}-{args.rid}'
 if args.rid == 'linux-x64':
