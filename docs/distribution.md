@@ -1,9 +1,7 @@
 # GitHub installation packages
 
-The release workflow accepts a semantic version and builds Linux x64 and Windows x64 packages. It validates native playback on both platforms, compiles Windows Setup with Inno Setup, and publishes archives, Setup and SHA-256 checksums to GitHub Releases. Linux includes a per-user application-menu installer.
+The release workflow builds Linux x64 and Windows x64 packages, validates native playback, compiles Windows Setup with Inno Setup, and publishes archives and SHA-256 checksums.
 
-Local validation on 2026-10-07: Linux archive contents, isolated installation with a spaced path, and shell syntax passed. Windows Setup compilation requires the GitHub runner.
+To publish a version, run **Publish installers** in GitHub Actions from `main` and enter a semantic version such as `0.1.0`. Publishing occurs only after both platform jobs succeed. Each version must be new.
 
-Publication is blocked by GitHub HTTP 500 responses on Git push, Git Data API, Contents API and release creation. No release was published. The prepared local branch is `feat/github-installers`.
-
-Next: push this branch, open and attach a PR, wait for Linux/Windows CI, merge, then dispatch `release.yml` with version `0.1.0` and verify release assets.
+Linux packages include a per-user application-menu installer. Windows Setup installs per user and supports uninstallation through Windows Settings. User library data stays separate from application files.

@@ -14,9 +14,7 @@ work/
 outputs/
 .playwright-cli/
 *.log
-.impeccable/mocks/
-.impeccable/review/
-.impeccable/build/
+.impeccable/
 .DS_Store
 
 .runtime/
@@ -25,3 +23,18 @@ artifacts/
 # Python helper caches
 __pycache__/
 *.pyc
+
+# Local development assistants and workspace metadata
+.codex/
+.agents/
+.claude/
+.cursor/
+.windsurf/
+.serena/
+.opencode/
+.aider*
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.mcp.json
+.github/copilot-instructions.md
