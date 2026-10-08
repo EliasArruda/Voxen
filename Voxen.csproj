@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>Assets/voxen.ico</ApplicationIcon>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -19,6 +20,10 @@
     <PackageReference Include="PhotinoX.Blazor" Version="5.3.3" />
     <PackageReference Include="ppy.SDL3-CS" Version="2026.1002.1" />
     <PackageReference Include="YoutubeExplode" Version="6.6.2" />
+  </ItemGroup>
+
+<ItemGroup>
+    <Content Include="Assets/voxen.ico;Assets/voxen.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 <ItemGroup><EmbeddedResource Include="Resources/*.json" /></ItemGroup>

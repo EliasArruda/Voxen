@@ -41,6 +41,7 @@ builder.ConfigureMainWindow(window =>
 {
     window
         .SetTitle("Voxen")
+        .SetIconFile(Path.Combine(AppContext.BaseDirectory, "Assets", OperatingSystem.IsWindows() ? "voxen.ico" : "voxen.png"))
         .SetSize(1280, 800)
         .SetTransparent(!OperatingSystem.IsWindows())
         .Center();

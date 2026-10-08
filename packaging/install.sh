@@ -22,7 +22,7 @@ Type=Application
 Name=Voxen
 Comment=Discover music and build your library
 Exec="$exec_path/Voxen"
-Icon=$install_dir/docs/images/voxen-mark.svg
+Icon=$install_dir/Assets/voxen.png
 Terminal=false
 Categories=AudioVideo;Audio;Player;
 DESKTOP
