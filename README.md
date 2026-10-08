@@ -24,8 +24,8 @@
 
 ## Start listening
 
-1. Download the portable package for your system from a successful [build's artifacts](https://github.com/EliasArruda/Voxen/actions/workflows/checks.yml). A GitHub account is required to download artifacts.
-2. Extract the whole folder and open **Voxen** on Linux or **Voxen.exe** on Windows. Keep the included files together.
+1. Download Voxen from [GitHub Releases](https://github.com/EliasArruda/Voxen/releases/latest).
+2. **Windows:** run the `windows-x64-setup.exe` installer. **Linux:** extract `linux-x64.tar.gz`, then run `bash install.sh` inside the folder. Open Voxen from your application menu. For portable use, extract the package and open **Voxen** or **Voxen.exe**, keeping the files together.
 3. Open **Explore**, enter a song or artist, and press **Listen now**.
 4. Use the heart for favorites, the bookmark to save, and **+** to add a track to the queue.
 5. Open **Library** to create playlists. Open **Settings** to change language, sound, and cover colors.
@@ -38,4 +38,4 @@ Voxen streams public tracks and needs an internet connection. Availability depen
 
 Your library and settings stay on your computer. Saving a track saves its details, not an offline audio file. No music-service account or personal API key is needed for public playback.
 
-The portable package includes its audio engine. Linux needs WebKitGTK 4.1 and a working audio device; Windows needs WebView2. If a track is unavailable, try another result or source.
+The installer and portable packages include .NET and the audio engine. Linux needs WebKitGTK 4.1 and a working audio device; Windows needs WebView2. If a track is unavailable, try another result or source.

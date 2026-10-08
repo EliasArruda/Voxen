@@ -44,6 +44,12 @@ jobs:
         env:
           SDL_AUDIODRIVER: dummy
           VOXEN_FFMPEG_PATH: ${{ github.workspace }}/artifacts/Voxen-${{ matrix.rid }}/tools/ffmpeg/${{ matrix.ffmpeg }}
+      - run: python scripts/package.py --rid ${{ matrix.rid }} --version 0.0.0-ci --input artifacts/Voxen-${{ matrix.rid }} --output artifacts/release
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=0.0.0" packaging/windows.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: Voxen-${{ matrix.rid }}
